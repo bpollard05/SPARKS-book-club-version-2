@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donate — SPARKS Book Club</title>
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="index.html" class="nav__logo"><img src="images/logo/logo.png" alt="SPARKS Book Club" style="height:90px;width:auto;"></a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="activities.html">What We Do</a></li>
+      <li><a href="join.html">Join</a></li>
+      <li><a href="donate.html" class="nav__cta"><span class="btn btn--primary" style="padding:.5rem 1.25rem;font-size:.85rem;" data-text="nav.donate">Donate</span></a></li>
+    </ul>
+    <button class="nav__toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Page hero -->
+<section class="hero" style="background:linear-gradient(135deg,#8B6800 0%,var(--gold) 60%,#F5C842 100%);">
+  <span class="hero__sparkles" style="top:14%;left:9%;">✦</span>
+  <span class="hero__sparkles" style="bottom:18%;right:11%;animation-delay:1.5s;">✦</span>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="hero__eyebrow" style="background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.2);color:var(--dark);" data-text="donate.hero.eyebrow">Support Our Work</div>
+    <h1 style="color:var(--dark);" data-text="donate.hero.title">Help Us Keep the Spark Alive</h1>
+    <p style="color:rgba(28,16,64,.85);" data-text="donate.hero.deck">Your donation provides books, STEM supplies, and mailed packages that bring SPARKS to life for students who need it most.</p>
+  </div>
+</section>
+
+<!-- Tax deductibility notice -->
+<section class="section" style="padding-bottom:0;">
+  <div class="container" style="max-width:800px;">
+    <div style="background:var(--purple-lt);border:1.5px solid var(--purple);border-radius:var(--radius);padding:1.25rem 1.75rem;display:flex;gap:1rem;align-items:flex-start;">
+      <span style="font-size:1.4rem;flex-shrink:0;">🏛️</span>
+      <div>
+        <strong style="color:var(--purple);" data-text="donate.notice.title">Donations Coming Soon</strong>
+        <p style="font-size:.875rem;margin-top:.3rem;color:#374151;" data-text="donate.notice.body">SPARKS Book Club is in the process of becoming an independent 501(c)(3) nonprofit organization. We aren't able to accept donations right now, but we will be soon! Check back here once our 501(c)(3) status is approved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Donation tiers -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow" data-text="donate.tiers.eyebrow">Ways to Give</span>
+      <h2 data-text="donate.tiers.title">Choose Your Impact</h2>
+      <p data-text="donate.tiers.deck">Every level of giving makes a real, direct difference — it all goes straight to the students.</p>
+    </div>
+
+    <div class="donate-tiers">
+      <div class="tier">
+        <div class="tier__amount" data-text="donate.t1.amount">$10</div>
+        <div class="tier__label" data-text="donate.t1.label">📚 Bookworm</div>
+        <p data-text="donate.t1.body">Covers one book for a student to keep and call their own.</p>
+        <a class="btn btn--disabled" data-text="donate.t1.cta">Give $10</a>
+        <p style="color:var(--gray);font-size:.78rem;margin-top:.5rem;margin-bottom:0;" data-text="donate.t1.soon">Coming soon — 501(c)(3) pending</p>
+      </div>
+
+      <div class="tier tier--featured">
+        <div class="tier__badge" data-text="donate.t2.badge">Most Popular</div>
+        <div class="tier__amount" data-text="donate.t2.amount">$25</div>
+        <div class="tier__label" data-text="donate.t2.label">✨ Story Spark</div>
+        <p data-text="donate.t2.body">Funds the supplies and materials for one student's full activity package.</p>
+        <a class="btn btn--disabled" data-text="donate.t2.cta">Give $25</a>
+        <p style="color:var(--gray);font-size:.78rem;margin-top:.5rem;margin-bottom:0;" data-text="donate.t2.soon">Coming soon — 501(c)(3) pending</p>
+      </div>
+
+      <div class="tier">
+        <div class="tier__amount" data-text="donate.t3.amount">$50</div>
+        <div class="tier__label" data-text="donate.t3.label">🔬 STEM Champion</div>
+        <p data-text="donate.t3.body">Sponsors one student's complete participation for an entire session — book, STEM project, craft, and postage.</p>
+        <a class="btn btn--disabled" data-text="donate.t3.cta">Give $50</a>
+        <p style="color:var(--gray);font-size:.78rem;margin-top:.5rem;margin-bottom:0;" data-text="donate.t3.soon">Coming soon — 501(c)(3) pending</p>
+      </div>
+
+      <div class="tier">
+        <div class="tier__amount" data-text="donate.t4.amount">$100+</div>
+        <div class="tier__label" data-text="donate.t4.label">🌟 Founding Friend</div>
+        <p data-text="donate.t4.body">A major gift that helps us grow SPARKS and reach more students in more schools.</p>
+        <a class="btn btn--disabled" data-text="donate.t4.cta">Give $100+</a>
+        <p style="color:var(--gray);font-size:.78rem;margin-top:.5rem;margin-bottom:0;" data-text="donate.t4.soon">Coming soon — 501(c)(3) pending</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <p style="color:var(--gray);font-size:.875rem;" data-text="donate.tiers.footnote">Donations will be available once our 501(c)(3) status is approved.</p>
+    </div>
+  </div>
+</section>
+
+<!-- What donations fund -->
+<section class="section section--shaded">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow" data-text="donate.impact.eyebrow">Your Impact</span>
+      <h2 data-text="donate.impact.title">Where Your Money Goes</h2>
+      <p data-text="donate.impact.deck">We're a lean, volunteer-run program. Each session costs about <strong>$300</strong> — every dollar goes directly to students.</p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card__icon">📚</div>
+        <h3 data-text="donate.impact.c1.title">Books</h3>
+        <p data-text="donate.impact.c1.body">Every student receives their own copy of our current read to keep. We choose titles featuring diverse characters, brave protagonists, and stories that open new worlds.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--teal">🔬</div>
+        <h3 data-text="donate.impact.c2.title">STEM &amp; Craft Supplies</h3>
+        <p data-text="donate.impact.c2.body">Coding kits, art supplies, science materials, seeds for herb gardens — the hands-on project materials that make every session come alive and connect books to the real world.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--gold">📦</div>
+        <h3 data-text="donate.impact.c3.title">Mailed Packages</h3>
+        <p data-text="donate.impact.c3.body">We ship everything directly to each student before every session — books, supplies, and materials. The postage alone is part of what makes SPARKS magical. Opening the box is half the fun.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Other ways to help -->
+<section class="section section--purple">
+  <div class="container text-center">
+    <h2 data-text="donate.other.title">Other Ways to Help</h2>
+    <p style="color:rgba(255,255,255,.88);max-width:560px;margin:1rem auto 2rem;" data-text="donate.other.deck">Money isn't the only way to make a difference. Here are other ways to support SPARKS:</p>
+    <div class="cards" style="text-align:left;margin-top:0;">
+      <div class="card">
+        <div class="card__icon">📣</div>
+        <h3 data-text="donate.other.c1.title">Spread the Word</h3>
+        <p data-text="donate.other.c1.body">Share our website, tell a parent, or post about us. Awareness helps us reach more students and attract more donors.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--teal">🤝</div>
+        <h3 data-text="donate.other.c2.title">Volunteer</h3>
+        <p data-text="donate.other.c2.body">We're building an intergenerational mentor model — seeking retired teachers, experienced educators, and trained high school students. <a href="mailto:naomi@pollard.us">Reach out</a> if you're interested.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--coral">👩‍💼</div>
+        <h3 data-text="donate.other.c3.title">Partner With Us</h3>
+        <p data-text="donate.other.c3.body">Are you a business, bookstore, school, or foundation? Let's talk about how we can collaborate. <a href="mailto:naomi@pollard.us">Get in touch.</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <a href="index.html" class="footer__brand"><img src="images/logo/logo.png" alt="SPARKS Book Club" style="height:36px;width:auto;filter:brightness(0) invert(1);"></a>
+      <p data-text="footer.tagline-short">A youth-led virtual book club for 3rd–5th grade students in Montgomery County, MD.</p>
+      <span class="footer__501" data-text="footer.status">501(c)(3) Status Pending</span>
+    </div>
+    <div>
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="activities.html">What We Do</a></li>
+        <li><a href="join.html">Join the Club</a></li>
+        <li><a href="donate.html">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Get Involved</h4>
+      <ul>
+        <li><a href="join.html">Sign Up to Join</a></li>
+        <li><a href="donate.html">Support Us</a></li>
+        <li><a href="mailto:naomi@pollard.us">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span data-text="footer.copyright">© 2026 SPARKS Book Club. All rights reserved.</span>
+    <span data-text="footer.madewith">Made with 💜 for our students</span>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script src="animations.js"></script>
+<script src="text-editor.js"></script>
+</body>
+</html>

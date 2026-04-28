@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPARKS Book Club — Books, STEM &amp; Community</title>
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── Splash screen ── -->
+<div id="splash">
+  <video id="splashVideo" autoplay muted playsinline>
+    <source src="images/logo/animated_logo.mp4" type="video/mp4">
+  </video>
+  <button id="splashSkip" data-text="splash.skip">Skip</button>
+</div>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="index.html" class="nav__logo">
+      <img src="images/logo/logo.png" alt="SPARKS Book Club" style="height:90px;width:auto;">
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="activities.html">What We Do</a></li>
+      <li><a href="join.html">Join</a></li>
+      <li><a href="donate.html" class="nav__cta"><span class="btn btn--primary" style="padding:.5rem 1.25rem;font-size:.85rem;" data-text="nav.donate">Donate</span></a></li>
+    </ul>
+    <button class="nav__toggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <span class="hero__sparkles" style="top:12%;left:8%;">✦</span>
+  <span class="hero__sparkles" style="top:25%;right:10%;animation-delay:1.5s;">✦</span>
+  <span class="hero__sparkles" style="bottom:22%;left:15%;animation-delay:3s;font-size:1.2rem;">✦</span>
+  <span class="hero__sparkles" style="top:18%;right:22%;animation-delay:.8s;font-size:1rem;">✦</span>
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <span class="badge badge--gold" data-text="home.hero.badge1">Youth-Led ✦</span>
+      <span class="badge" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);" data-text="home.hero.badge2">Montgomery County, MD</span>
+    </div>
+    <div class="hero__eyebrow" data-text="home.hero.eyebrow">Books · STEM · Community</div>
+    <h1><span data-text="home.hero.title1">Igniting a Love of</span><br><span data-text="home.hero.title2">Reading, STEM &amp; Connection</span></h1>
+    <p data-text="home.hero.deck">SPARKS Book Club brings together 3rd–5th grade students for joyful reading, hands-on STEM activities, and real community — virtually, every month.</p>
+    <div class="hero__buttons">
+      <a href="join.html" class="btn btn--gold" data-text="home.hero.cta1">Join the Club</a>
+      <a href="about.html" class="btn btn--outline" data-text="home.hero.cta2">Our Story</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats ── -->
+<div class="container">
+  <div class="stats">
+    <div class="stats__item">
+      <div class="stats__num" data-text="home.stats.num1">9</div>
+      <div class="stats__label" data-text="home.stats.label1">Sessions Per School Year</div>
+    </div>
+    <div class="stats__item">
+      <div class="stats__num" data-text="home.stats.num2">3rd–5th</div>
+      <div class="stats__label" data-text="home.stats.label2">Grade Levels</div>
+    </div>
+    <div class="stats__item">
+      <div class="stats__num" data-text="home.stats.num3">2020</div>
+      <div class="stats__label" data-text="home.stats.label3">Youth-Led Since</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Mission ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow" data-text="home.mission.eyebrow">Our Mission</span>
+      <h2 data-text="home.mission.title">More Than a Book Club</h2>
+      <p data-text="home.mission.deck">We believe every student deserves a safe, joyful space to read, explore, and feel seen — especially those who need it most.</p>
+    </div>
+
+    <div class="cards mt-4">
+      <div class="card">
+        <div class="card__icon">📚</div>
+        <h3 data-text="home.mission.card1.title">Love of Reading</h3>
+        <p data-text="home.mission.card1.body">Students choose the books they want to read — so they actually want to read them. We select age-appropriate titles that reflect diverse voices and open windows to new worlds.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--coral">💜</div>
+        <h3 data-text="home.mission.card2.title">Social Connection</h3>
+        <p data-text="home.mission.card2.body">SPARKS gives students a reliable, joyful space to connect with peers. Kind cameras, fun ice-breakers, and a no-pressure atmosphere make every session feel like home.</p>
+      </div>
+      <div class="card">
+        <div class="card__icon card__icon--teal">🔬</div>
+        <h3 data-text="home.mission.card3.title">STEM Curiosity</h3>
+        <p data-text="home.mission.card3.body">Books pair with hands-on STEM projects — coding in Scratch, planting mini herb gardens, designing experiments. We show students that science and stories go hand in hand.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Package Animation ── -->
+<section class="section pkg-section">
+  <div class="container text-center">
+    <span class="eyebrow" data-reveal data-text="home.pkg.eyebrow">The Best Part</span>
+    <h2 data-reveal data-text="home.pkg.title">Something Special Arrives Before Every Session</h2>
+    <p data-reveal style="max-width:520px;margin:.75rem auto 2.5rem;" data-text="home.pkg.deck">We mail each student their own package — book, STEM supplies, and craft materials — all ready to open together at our virtual session.</p>
+    <div class="pkg-stage">
+      <div class="pkg-wrap" id="pkgWrap" title="Click to replay">
+        <div class="pkg-items" aria-hidden="true">
+          <span class="pkg-item">📚</span>
+          <span class="pkg-item">🔬</span>
+          <span class="pkg-item">🎨</span>
+          <span class="pkg-item">🖌️</span>
+          <span class="pkg-item">📖</span>
+          <span class="pkg-item">⭐</span>
+        </div>
+        <div class="pkg-lid"><div class="pkg-lid__face"></div></div>
+        <div class="pkg-body"><div class="pkg-tape"></div></div>
+      </div>
+    </div>
+    <p style="color:var(--gray);font-size:.82rem;margin-top:.5rem;" data-text="home.pkg.replay">Click the box to replay</p>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;" data-reveal>
+      <span class="badge badge--purple" data-text="home.pkg.badge1">📚 Their own book</span>
+      <span class="badge badge--teal" data-text="home.pkg.badge2">🔬 STEM supplies</span>
+      <span class="badge badge--gold" data-text="home.pkg.badge3">🎨 Craft materials</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Origin Story ── -->
+<section class="section section--shaded">
+  <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
+    <div>
+      <span class="eyebrow" style="color:var(--purple);display:block;margin-bottom:.5rem;" data-text="home.story.eyebrow">Our Story</span>
+      <h2 data-text="home.story.title">Born From a Pandemic, Built on Purpose</h2>
+      <p class="mt-2" data-text="home.story.p1">In 2020, sisters Ariel and Becca Pollard saw what was slipping away for kids in the Montgomery County school system: routine, social belonging, and the joy of learning. Together with Barbara Friedlander, they started SPARKS.</p>
+      <p class="mt-2" data-text="home.story.p2">What began as a small virtual book club quickly grew into something bigger. A community where students look forward to signing on every month. Where books become conversation-starters, and where every student's voice matters.</p>
+      <p class="mt-2" data-text="home.story.p3">Today, SPARKS is in its sixth year — still student-led, still virtual, still showing up every month with books, STEM projects, and something special to open.</p>
+      <a href="about.html" class="btn btn--primary" style="margin-top:1.5rem;" data-text="home.story.cta">Meet the Team</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <img src="images/book-club-activities.png" alt="SPARKS book club activities" style="border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;">
+      <img src="images/book-club-discussion.png" alt="SPARKS book club discussion" style="border-radius:var(--radius);box-shadow:var(--shadow);width:100%;">
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="section section--purple">
+  <div class="container text-center">
+    <h2 data-text="home.cta.title">Help Us Keep the Spark Alive</h2>
+    <p style="color:rgba(255,255,255,.88);max-width:520px;margin:1rem auto 2rem;" data-text="home.cta.body">Your support funds books, STEM supplies, and mailed packages for every student. Every dollar goes directly to the kids.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="donate.html" class="btn btn--gold" data-text="home.cta.donate">Make a Donation</a>
+      <a href="join.html" class="btn btn--outline" data-text="home.cta.join">Join the Club</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <a href="index.html" class="footer__brand">
+        <img src="images/logo/logo.png" alt="SPARKS Book Club" style="height:36px;width:auto;filter:brightness(0) invert(1);">
+      </a>
+      <p data-text="footer.tagline">A youth-led virtual book club for 3rd–5th grade students in Montgomery County, MD. Cultivating readers, thinkers, and future scientists — one book at a time.</p>
+      <span class="footer__501" data-text="footer.status">501(c)(3) Status Pending</span>
+    </div>
+    <div>
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="activities.html">What We Do</a></li>
+        <li><a href="join.html">Join the Club</a></li>
+        <li><a href="donate.html">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Get Involved</h4>
+      <ul>
+        <li><a href="join.html">Sign Up to Join</a></li>
+        <li><a href="donate.html">Support Us</a></li>
+        <li><a href="mailto:naomi@pollard.us">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span data-text="footer.copyright">© 2026 SPARKS Book Club. All rights reserved.</span>
+    <span data-text="footer.madewith">Made with 💜 for our students</span>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script src="animations.js"></script>
+<script src="text-editor.js"></script>
+</body>
+</html>
