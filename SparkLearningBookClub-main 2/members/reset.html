@@ -14,14 +14,24 @@
 <nav class="pnav">
   <div class="pnav__inner">
     <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
-    <div class="pnav__links"><a href="index.html">← Sign in</a></div>
+    <div class="pnav__links"><a href="../index.html">Home</a><a href="../about.html">About</a><a href="../activities.html">What We Do</a><a href="../join.html">Join</a><a href="index.html" class="active">Members</a></div>
+    <div class="pnav__user"><a href="../donate.html" class="btn btn--primary">Donate</a></div>
   </div>
 </nav>
+<section class="hero phero ">
+  <span class="hero__sparkles" style="top:14%;left:7%;">✦</span>
+  <span class="hero__sparkles" style="bottom:18%;right:9%;animation-delay:2s;">✦</span>
+  <span class="hero__sparkles" style="top:22%;right:24%;animation-delay:.8s;font-size:1.1rem;">✦</span>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="hero__eyebrow">Members</div>
+    <h1>Reset Your Password</h1>
+    
+  </div>
+</section>
 
-<main class="portal portal--narrow">
-  <div class="auth-card panel">
+<main class="portal portal--narrow" style="margin-top:-2.5rem;position:relative;z-index:2;">
+  <div class="auth-card panel" style="margin-top:0;">
     <div id="request">
-      <h1>Reset your password</h1>
       <p class="subtle">Enter your email and we'll send you a link to choose a new password.</p>
       <form id="requestForm" novalidate style="margin-top:1rem;">
         <div class="field">
@@ -34,7 +44,7 @@
     </div>
 
     <div id="update" hidden>
-      <h1>Choose a new password</h1>
+      <h2>Choose a new password</h2>
       <form id="updateForm" novalidate style="margin-top:1rem;">
         <div class="field">
           <label for="password">New password</label>

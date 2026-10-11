@@ -143,11 +143,12 @@
       <div class="pnav__inner">
         <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
         <div class="pnav__links">
+          <a href="../index.html">Home</a>
           ${links.map(([href, label]) => `<a href="${href}" class="${href === here ? 'active' : ''}">${esc(label)}</a>`).join('')}
         </div>
         <div class="pnav__user">
           <span class="pnav__name">${esc(name)}</span>
-          <button class="btn btn--outline-purple btn--sm" id="signOutBtn" type="button">Sign out</button>
+          <button class="btn btn--primary" id="signOutBtn" type="button">Sign out</button>
         </div>
       </div>`;
     $('#signOutBtn').addEventListener('click', signOut);

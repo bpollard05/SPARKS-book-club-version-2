@@ -11,10 +11,18 @@
 </head>
 <body>
 <nav class="pnav" id="portalNav"></nav>
+<section class="hero phero phero--family">
+  <span class="hero__sparkles" style="top:14%;left:7%;">✦</span>
+  <span class="hero__sparkles" style="bottom:18%;right:9%;animation-delay:2s;">✦</span>
+  <span class="hero__sparkles" style="top:22%;right:24%;animation-delay:.8s;font-size:1.1rem;">✦</span>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="hero__eyebrow">Family Account</div>
+    <h1>Your Family</h1>
+    <p><span id="welcome">Loading…</span></p>
+  </div>
+</section>
 
 <main class="portal">
-  <h1>Family Account</h1>
-  <p class="subtle" id="welcome">Loading…</p>
 
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true"  aria-controls="t-students">Students</button>
@@ -134,7 +142,7 @@
   const S = window.SPARKS;
   const me = await S.requireAuth(['parent']);
   const { $, $$, sb, esc, toast, badge, fmtDate, fmtDateTime, rpc, fn } = S;
-  $('#welcome').textContent = `Welcome, ${me.profile?.full_name || me.email}.`;
+  $('#welcome').textContent = `Welcome, ${me.profile?.full_name || me.email}. Manage your students, address, schedule, and agreements here.`;
 
   $$('[role=tab]').forEach(tab => tab.addEventListener('click', () => {
     $$('[role=tab]').forEach(t => t.setAttribute('aria-selected', t === tab));

@@ -14,14 +14,23 @@
 <nav class="pnav">
   <div class="pnav__inner">
     <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
-    <div class="pnav__links"><a href="index.html">← Sign in</a></div>
+    <div class="pnav__links"><a href="../index.html">Home</a><a href="../about.html">About</a><a href="../activities.html">What We Do</a><a href="../join.html">Join</a><a href="index.html" class="active">Members</a></div>
+    <div class="pnav__user"><a href="../donate.html" class="btn btn--primary">Donate</a></div>
   </div>
 </nav>
-
-<main class="portal portal--narrow">
-  <div class="auth-card panel" style="max-width:560px;">
+<section class="hero phero phero--family">
+  <span class="hero__sparkles" style="top:14%;left:7%;">✦</span>
+  <span class="hero__sparkles" style="bottom:18%;right:9%;animation-delay:2s;">✦</span>
+  <span class="hero__sparkles" style="top:22%;right:24%;animation-delay:.8s;font-size:1.1rem;">✦</span>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="hero__eyebrow">New Family</div>
     <h1>Create a Parent Account</h1>
-    <p class="subtle">A parent or guardian owns the family account. You'll add your student and create their login from inside your account — we never ask children for an email address.</p>
+    <p>A parent or guardian owns the family account. You'll add your student and create their login from inside your account — we never ask children for an email address.</p>
+  </div>
+</section>
+
+<main class="portal portal--narrow" style="margin-top:-2.5rem;position:relative;z-index:2;">
+  <div class="auth-card panel" style="max-width:560px;margin-top:0;">
 
     <form id="signupForm" novalidate style="margin-top:1.25rem;">
       <div class="field">
