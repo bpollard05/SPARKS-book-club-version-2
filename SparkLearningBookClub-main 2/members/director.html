@@ -215,13 +215,19 @@
       <div class="panel__head"><h2>Order package: ${esc(s.title)} ${badge(s.status)}</h2><div class="btn-row"><button class="btn btn--ghost btn--sm" onclick="window.print()">Print</button><button class="btn btn--ghost btn--sm" id="closePkg">Close</button></div></div>
       <p class="subtle">Place this order in the SPARKS Amazon Business account by <strong>${esc(fmtDate(s.order_by_date + 'T12:00:00'))}</strong>, then paste the order number below. Leader${pkg.leaders.length > 1 ? 's' : ''}: ${pkg.leaders.map(l => esc(l.name) + ' (' + esc(l.email) + ')').join(', ') || '—'}.</p>
       <h3 style="margin-top:1rem;">1. Items to order (${esc(s.required_qty)} of each)</h3>
+      ${(() => { const withAsin = pkg.items.filter(i => S.asinFromUrl(i.product_url)); const noAsin = pkg.items.filter(i => !S.asinFromUrl(i.product_url)); const cart = S.amazonCartUrl(pkg.items);
+        return `<div class="notice" style="margin:.5rem 0 1rem;"><div class="btn-row">
+          ${cart ? `<a class="btn btn--gold" href="${esc(cart)}" target="_blank" rel="noopener">🛒 Open Amazon cart with ${withAsin.length} item${withAsin.length === 1 ? '' : 's'} × ${esc(s.required_qty)}</a>` : '<span class="subtle">No Amazon links on this order.</span>'}
+          </div><p class="subtle" style="margin-top:.5rem;">Sign in to the <strong>SPARKS Amazon Business</strong> account first. The cart opens pre-filled; at checkout choose <strong>Deliver to multiple addresses</strong> and pick each family from your address book (step 2 gives you the upload file).</p>
+          ${noAsin.length ? `<p style="margin-top:.4rem;"><strong>Add by hand (not Amazon links):</strong> ${noAsin.map(i => esc(i.title)).join(', ')}</p>` : ''}</div>`; })()}
       <div class="table-wrap"><table class="tbl"><thead><tr><th>Item</th><th>Link</th><th>Each</th><th>Qty</th><th>Line total</th></tr></thead><tbody>
         ${pkg.items.map(i => `<tr><td>${i.kind === 'book' ? '📚' : '🔬'} ${esc(i.title)}</td><td><a href="${esc(i.product_url)}" target="_blank" rel="noopener">open ↗</a><div class="mono">${esc(i.product_url)}</div></td><td>${esc(fmtMoney(i.unit_price_cents))}</td><td>${esc(i.qty)}</td><td>${esc(fmtMoney(i.line_total_cents))}</td></tr>`).join('')}
         <tr><td colspan="4"><strong>Estimated total</strong></td><td><strong>${esc(fmtMoney(total))}</strong></td></tr></tbody></table></div>
       <h3 style="margin-top:1.25rem;">2. Shipping manifest (${pkg.manifest.filter(m => m.enrolled).length} students + 1 leader copy + spares to SPARKS)</h3>
       ${s.required_qty_now !== s.required_qty ? `<div class="notice notice--warn"><strong>Enrollment changed since approval:</strong> ${esc(s.enrolled_now)} students are enrolled now, so you need <strong>${esc(s.required_qty_now)}</strong> copies (the request said ${esc(s.required_qty)}).${late.length ? ' Added: ' + late.map(m => esc(m.student_first_name)).join(', ') + '.' : ''}${withdrawn.length ? ' Do not ship (withdrawn or moved): ' + withdrawn.map(m => esc(m.student_first_name)).join(', ') + '.' : ''}</div>` : ''}
       ${bad.length ? `<div class="notice notice--warn"><strong>${bad.length} address${bad.length > 1 ? 'es' : ''} missing or unverified:</strong> ${bad.map(m => esc(m.student_first_name)).join(', ')}. Contact the parent before shipping.</div>` : ''}
-      <div class="btn-row" style="margin:.5rem 0;"><button class="btn btn--outline-purple btn--sm" id="manifestCsv">Download manifest CSV</button></div>
+      <div class="btn-row" style="margin:.5rem 0;"><button class="btn btn--outline-purple btn--sm" id="manifestCsv">Download manifest CSV</button><button class="btn btn--outline-purple btn--sm" id="addressBookCsv">Download Amazon address-book file</button></div>
+      <p class="subtle">Address book: in Amazon Business go to <em>Business Settings → Addresses → Add an address → Upload</em>, download their template, paste these columns in, and upload once per year (max 1,000 rows). Then "Deliver to multiple addresses" at checkout just picks names.</p>
       <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Ship to</th><th>Parent</th><th>Address OK?</th><th>Shipment</th><th>Update</th></tr></thead><tbody>
         ${pkg.manifest.map(m => `<tr style="${m.enrolled ? '' : 'opacity:.55;text-decoration:line-through;'}">
           <td><strong>${esc(m.student_first_name)}</strong>${m.enrolled ? '' : ` <span class="pill pill--coral" style="text-decoration:none;">${m.in_club ? 'Withdrawn' : 'Moved to another club'} — do not ship</span>`}${m.enrolled && m.added_after_approval ? ' <span class="pill pill--gold">Added late</span>' : ''}<br><span class="subtle">Grade ${esc(m.grade)}</span></td>
@@ -249,6 +255,9 @@
     $('#manifestCsv').onclick = () => S.csvDownload(`manifest-${s.title.replace(/[^a-z0-9]+/gi, '-')}.csv`, [
       ['Student', 'Grade', 'Parent', 'Email', 'Phone', 'Address 1', 'Address 2', 'City', 'State', 'ZIP', 'USPS validated', 'Shipment status'],
       ...pkg.manifest.filter(m => m.enrolled).map(m => [m.student_first_name, m.grade, m.parent_name, m.parent_email, m.parent_phone, m.address_line1, m.address_line2, m.city, m.state, m.zip, m.address_validated ? 'yes' : 'no', m.shipment_status])]);
+    $('#addressBookCsv').onclick = () => S.csvDownload(`amazon-address-book-${s.title.replace(/[^a-z0-9]+/gi, '-')}.csv`, [
+      ['Address name', 'Full name', 'Address line 1', 'Address line 2', 'City', 'State', 'ZIP code', 'Country', 'Phone number', 'Delivery instructions'],
+      ...pkg.manifest.filter(m => m.enrolled && m.address_line1).map(m => [`SPARKS – ${m.student_first_name} (${m.parent_name})`, m.parent_name, m.address_line1, m.address_line2 || '', m.city, m.state, m.zip, 'US', m.parent_phone || '', `SPARKS Book Club package for ${m.student_first_name}`])]);
     $$('[data-ship]').forEach(sel => sel.onchange = async () => {
       try { await rpc('set_shipment_status', { p_shipment_id: sel.dataset.ship, p_status: sel.value, p_tracking: $(`[data-track="${sel.dataset.ship}"]`).value || null }); toast('Shipment updated.', 'ok'); await loadAll(); openPackage(id); }
       catch (e) { toast(e.message, 'error'); }

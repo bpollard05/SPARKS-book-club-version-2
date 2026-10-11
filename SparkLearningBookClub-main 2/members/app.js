@@ -193,6 +193,23 @@
       return decodeURIComponent(slug).replace(/[-_+]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).slice(0, 80);
     } catch (_) { return ''; }
   }
+  // Amazon helpers (Section 3.3 "assisted ordering"): the ASIN is the 10-char id in /dp/ or /gp/product/ links.
+  function asinFromUrl(url) {
+    try {
+      const u = new URL(url);
+      if (!/(^|\.)(amazon\.[a-z.]+|amzn\.com|a\.co|amzn\.to)$/i.test(u.hostname)) return null;
+      const m = u.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d|product|ASIN)\/([A-Z0-9]{10})(?:[/?]|$)/i);
+      return m ? m[1].toUpperCase() : null;
+    } catch (_) { return null; }
+  }
+  // Pre-filled cart: Amazon's "add to cart" link (ASIN.n + Quantity.n pairs). Amazon shows a
+  // confirmation page listing the items; nothing is added until the director clicks Add To Cart.
+  function amazonCartUrl(items) {
+    const p = new URLSearchParams({ AssociateTag: CFG.AMAZON_ASSOCIATE_TAG || 'sparkslearning-20' });  // required, verified 2026-10-11
+    let n = 0;
+    for (const it of items) { const asin = asinFromUrl(it.product_url); if (!asin) continue; n++; p.set(`ASIN.${n}`, asin); p.set(`Quantity.${n}`, String(it.qty || 1)); }
+    return n ? `https://www.amazon.com/gp/aws/cart/add.html?${p}` : null;
+  }
   function csvDownload(filename, rows) {
     const q = (v) => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; }; // quote + defuse spreadsheet formulas
     const csv = rows.map(r => r.map(q).join(',')).join('\r\n');
@@ -205,6 +222,6 @@
   window.SPARKS = {
     sb, configured, $, $$, esc, toast, fmtDate, fmtDateTime, fmtTime, fmtMoney, daysUntil, localToIso,
     STATUS, badge, requireConfig, requireAuth, whoami, homeFor, signOut, studentEmail, rpc, fn, cleanErr,
-    googleCalendarUrl, icalFeedUrl, formData, busy, guessTitleFromUrl, csvDownload, CFG,
+    googleCalendarUrl, icalFeedUrl, formData, busy, guessTitleFromUrl, csvDownload, asinFromUrl, amazonCartUrl, CFG,
   };
 })();

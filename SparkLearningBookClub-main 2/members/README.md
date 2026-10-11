@@ -154,6 +154,24 @@ as Phase 2) is included because it was trivial.
 
 ---
 
+## 2.1 Ordering on Amazon in three clicks
+Amazon has no public ordering API for small organisations, so the portal does everything around the
+purchase (PRD §3.3). On the order package, directors get:
+
+1. **Open Amazon cart** – a pre-filled cart link (Amazon's `cart/add` URL with each item's ASIN and
+   the computed quantity; Amazon shows a confirmation page, then *Add To Cart*). Sign in to the
+   SPARKS Amazon Business account first. The link needs an `AMAZON_ASSOCIATE_TAG` in `config.js`
+   (any value works; a real Associates tag would earn referral credit).
+2. **Deliver to multiple addresses** – at Amazon checkout, choose this option and pick each family.
+3. **Download Amazon address-book file** – the manifest in address-book columns. Upload it once per
+   year via *Business Settings → Addresses → Add an address → Upload* (Amazon provides an Excel
+   template there; paste these columns into it, up to 1,000 rows). Re-export when families change.
+4. Paste the order number back into the portal; shipping tracking and reminders take over.
+
+Items that are not Amazon links (bookshop.org, local store) are listed as "add by hand". A local
+bookstore or distributor can also drop-ship directly from the **manifest CSV**; set the vendor
+accordingly when recording the order.
+
 ## 3. Day-to-day
 
 - **New family**: parent signs up → adds student → **you** assign the student to a club

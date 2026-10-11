@@ -18,6 +18,10 @@ window.SPARKS_CONFIG = {
   // Shown in page titles / emails
   ORG_NAME: "SPARKS Book Club",
 
+  // Amazon's pre-filled cart link only works with an AssociateTag present. Any tag works;
+  // if SPARKS joins Amazon Associates, put the real one here to earn referral credit.
+  AMAZON_ASSOCIATE_TAG: "sparkslearning-20",
+
   // Public base URL of the live site (used for calendar links)
   SITE_URL: "https://sparkslearning.org",
 };
