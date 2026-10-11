@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Family Account — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+<nav class="pnav" id="portalNav"></nav>
+
+<main class="portal">
+  <h1>Family Account</h1>
+  <p class="subtle" id="welcome">Loading…</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  aria-controls="t-students">Students</button>
+    <button role="tab" aria-selected="false" aria-controls="t-schedule">Books &amp; Schedule</button>
+    <button role="tab" aria-selected="false" aria-controls="t-family">Address &amp; Contacts</button>
+    <button role="tab" aria-selected="false" aria-controls="t-consents">Consents</button>
+    <button role="tab" aria-selected="false" aria-controls="t-feedback">Feedback</button>
+    <button role="tab" aria-selected="false" aria-controls="t-data">Your Data</button>
+  </div>
+
+  <!-- ── Students ── -->
+  <section id="t-students" role="tabpanel">
+    <div id="studentList" class="list"></div>
+    <div class="panel" style="margin-top:1.5rem;">
+      <h2>Add a student</h2>
+      <p class="subtle">We only store a first name, grade, and club. A director will place your student in a club after you enroll.</p>
+      <form id="addStudentForm" class="field--inline" style="margin-top:.75rem;align-items:end;">
+        <div class="field"><label for="s_first">First name</label><input id="s_first" name="first_name" maxlength="40" required></div>
+        <div class="field"><label for="s_grade">Grade</label>
+          <select id="s_grade" name="grade" required><option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option></select></div>
+        <div class="field"><button class="btn btn--primary" type="submit">Add student</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── Schedule ── -->
+  <section id="t-schedule" role="tabpanel" hidden>
+    <div id="scheduleWrap"></div>
+    <div class="panel">
+      <h2>Subscribe to the calendar</h2>
+      <p class="subtle">Add this link once in Google Calendar, Apple Calendar, or Outlook and every schedule change shows up automatically.</p>
+      <div class="copy-row" style="margin-top:.75rem;">
+        <input id="icalUrl" class="mono" readonly aria-label="Calendar subscription link">
+        <button class="btn btn--outline-purple btn--sm" id="copyIcal" type="button">Copy</button>
+      </div>
+      <div class="btn-row" style="margin-top:.75rem;">
+        <a id="webcalLink" class="btn btn--primary btn--sm" href="#">Open in calendar app</a>
+        <button class="btn btn--ghost btn--sm" id="rotateIcal" type="button">Get a new link</button>
+      </div>
+      <details class="acc" style="margin-top:1rem;"><summary>How to add it in Google Calendar</summary>
+        <ol style="margin:.5rem 0 0 1.2rem;"><li>Copy the link above.</li><li>In Google Calendar on a computer, next to <em>Other calendars</em> click <strong>+</strong> → <strong>From URL</strong>.</li><li>Paste the link and click <strong>Add calendar</strong>.</li></ol>
+      </details>
+    </div>
+  </section>
+
+  <!-- ── Family / address ── -->
+  <section id="t-family" role="tabpanel" hidden>
+    <div id="addressWarning"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h2>Mailing address</h2>
+        <p class="subtle">Books are mailed here. We check it against the US Postal Service so nothing gets lost.</p>
+        <form id="addressForm" novalidate style="margin-top:.75rem;">
+          <div class="field"><label for="address_line1">Street address</label><input id="address_line1" name="address_line1" autocomplete="address-line1" required></div>
+          <div class="field"><label for="address_line2">Apt / unit (optional)</label><input id="address_line2" name="address_line2" autocomplete="address-line2"></div>
+          <div class="field--inline">
+            <div class="field"><label for="city">City</label><input id="city" name="city" autocomplete="address-level2" required></div>
+            <div class="field"><label for="state">State</label><input id="state" name="state" autocomplete="address-level1" maxlength="2" placeholder="MD" required></div>
+          </div>
+          <div class="field"><label for="zip">ZIP</label><input id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" required></div>
+          <div id="addressStatus"></div>
+          <button class="btn btn--primary" type="submit">Check &amp; save address</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Contact info</h2>
+        <form id="contactForm" novalidate style="margin-top:.75rem;">
+          <div class="field"><label for="full_name">Parent / guardian name</label><input id="full_name" name="full_name" autocomplete="name" required></div>
+          <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" disabled><div class="hint">To change your login email, contact a director.</div></div>
+          <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
+          <h3 style="margin:1rem 0 .5rem;">Emergency contact</h3>
+          <div class="field"><label for="emergency_name">Name</label><input id="emergency_name" name="emergency_name"></div>
+          <div class="field"><label for="emergency_phone">Phone</label><input id="emergency_phone" name="emergency_phone" type="tel"></div>
+          <button class="btn btn--primary" type="submit">Save contacts</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Consents ── -->
+  <section id="t-consents" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Program agreements</h2>
+      <div id="consentList" class="list" style="margin-top:.75rem;"></div>
+    </div>
+  </section>
+
+  <!-- ── Feedback ── -->
+  <section id="t-feedback" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>What your student told their leader</h2>
+      <p class="subtle">Students can send one-way feedback to their leader after each session. You can always see it here.</p>
+      <div id="feedbackList" class="list" style="margin-top:.75rem;"></div>
+    </div>
+  </section>
+
+  <!-- ── Data ── -->
+  <section id="t-data" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Your data</h2>
+      <p class="subtle">You can download everything we hold about your family, or ask us to delete it.</p>
+      <div class="btn-row" style="margin-top:1rem;">
+        <button class="btn btn--outline-purple" id="exportBtn" type="button">Download my family's data (JSON)</button>
+        <button class="btn btn--coral" id="deleteBtn" type="button">Request account deletion</button>
+      </div>
+      <p class="subtle" style="margin-top:1rem;">Deletion requests are handled by a director within 30 days. Your student will be withdrawn from upcoming sessions right away.</p>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  const me = await S.requireAuth(['parent']);
+  const { $, $$, sb, esc, toast, badge, fmtDate, fmtDateTime, rpc, fn } = S;
+  $('#welcome').textContent = `Welcome, ${me.profile?.full_name || me.email}.`;
+
+  $$('[role=tab]').forEach(tab => tab.addEventListener('click', () => {
+    $$('[role=tab]').forEach(t => t.setAttribute('aria-selected', t === tab));
+    $$('[role=tabpanel]').forEach(p => p.hidden = p.id !== tab.getAttribute('aria-controls'));
+    history.replaceState(null, '', '#' + tab.getAttribute('aria-controls'));
+  }));
+  if (location.hash) { const t = $(`[aria-controls="${location.hash.slice(1)}"]`); if (t) t.click(); }
+
+  let family, students = [], clubs = [], scheduleByClub = {}, sessionTitle = {};
+
+  async function loadAll() {
+    const [{ data: f }, { data: s }, { data: c }] = await Promise.all([
+      sb.from('families').select('*').eq('id', me.family_id).single(),
+      sb.from('students').select('*').eq('family_id', me.family_id).order('created_at'),
+      sb.from('clubs').select('id,name,meeting_url'),
+    ]);
+    family = f; students = s || []; clubs = c || [];
+    scheduleByClub = {}; sessionTitle = {};
+    for (const cid of [...new Set(students.filter(x => x.club_id).map(x => x.club_id))]) {
+      try { scheduleByClub[cid] = await rpc('club_schedule', { p_club_id: cid }); } catch (e) { scheduleByClub[cid] = []; }
+      scheduleByClub[cid].forEach(r => { sessionTitle[r.id] = r.title; });
+    }
+    renderStudents(); renderFamily(); renderSchedule(); renderConsents(); renderFeedback();
+    checkMissingConsents();
+  }
+  const clubName = (id) => clubs.find(c => c.id === id)?.name || 'Not assigned yet';
+
+  /* ── Students (5.2.5) ───────────────────────────────────────── */
+  function renderStudents() {
+    const box = $('#studentList');
+    if (!students.length) { box.innerHTML = '<div class="notice">No students yet — add one below.</div>'; return; }
+    box.innerHTML = students.map(st => `
+      <div class="item" data-id="${esc(st.id)}">
+        <div class="item__main">
+          <div class="item__title">${esc(st.first_name)} <span class="subtle">· Grade ${esc(st.grade)}</span></div>
+          <div class="item__meta">${st.enrolled ? 'Club: <strong>' + esc(clubName(st.club_id)) + '</strong> · Enrolled' : '<strong>Withdrawn</strong> (re-enroll to see the club and schedule)'}
+            · Login: ${st.username ? 'username <code>' + esc(st.username) + '</code>' : 'not set up'}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn--outline-purple btn--sm" data-act="login">${st.username ? 'Reset secret word' : 'Create student login'}</button>
+          <button class="btn btn--ghost btn--sm" data-act="edit">Edit</button>
+          <button class="btn btn--ghost btn--sm" data-act="enroll">${st.enrolled ? 'Withdraw' : 'Re-enroll'}</button>
+        </div>
+        <form class="login-form" hidden style="flex-basis:100%;margin-top:.5rem;">
+          <div class="field--inline" style="align-items:end;">
+            ${st.username ? '' : `<div class="field"><label>Username (letters, numbers, _)</label><input name="username" pattern="[a-z0-9_]{3,20}" autocapitalize="none" required placeholder="e.g. maya_reads"></div>`}
+            <div class="field"><label>Secret word (8+ characters, e.g. purplecat1)</label><input name="secret" minlength="8" required placeholder="something easy for them to remember"></div>
+            <div class="field"><button class="btn btn--primary btn--sm" type="submit">Save login</button> <button class="btn btn--ghost btn--sm" type="button" data-act="cancel">Cancel</button></div>
+          </div>
+          <p class="hint">Students sign in on the Members page with their username and secret word. There is no email for the student account.</p>
+        </form>
+        <form class="edit-form" hidden style="flex-basis:100%;margin-top:.5rem;">
+          <div class="field--inline" style="align-items:end;">
+            <div class="field"><label>First name</label><input name="first_name" value="${esc(st.first_name)}" maxlength="40" required></div>
+            <div class="field"><label>Grade</label><select name="grade">${[...new Set([3,4,5,st.grade])].sort().map(g => `<option value="${g}" ${g == st.grade ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+            <div class="field"><button class="btn btn--primary btn--sm" type="submit">Save</button> <button class="btn btn--ghost btn--sm" type="button" data-act="cancel">Cancel</button></div>
+          </div>
+        </form>
+      </div>`).join('');
+
+    $$('#studentList .item').forEach(item => {
+      const id = item.dataset.id; const st = students.find(s => s.id === id);
+      item.querySelector('[data-act=login]').onclick = () => { item.querySelector('.login-form').hidden = false; item.querySelector('.edit-form').hidden = true; };
+      item.querySelector('[data-act=edit]').onclick  = () => { item.querySelector('.edit-form').hidden = false; item.querySelector('.login-form').hidden = true; };
+      $$('[data-act=cancel]', item).forEach(b => b.onclick = () => { item.querySelector('.login-form').hidden = true; item.querySelector('.edit-form').hidden = true; });
+      item.querySelector('[data-act=enroll]').onclick = async () => {
+        if (st.enrolled && !confirm(`Withdraw ${st.first_name} from upcoming sessions?`)) return;
+        try { await rpc('set_enrollment', { p_student_id: id, p_enrolled: !st.enrolled }); toast(st.enrolled ? 'Withdrawn.' : 'Re-enrolled!', 'ok'); loadAll(); }
+        catch (e) { toast(e.message, 'error'); }
+      };
+      item.querySelector('.login-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = S.formData(e.target); const btn = e.submitter; S.busy(btn, true);
+        try {
+          await fn('student-login', { action: st.username ? 'reset' : 'create', student_id: id, username: f.username, secret: f.secret });
+          toast(st.username ? 'Secret word updated.' : 'Student login created!', 'ok'); loadAll();
+        } catch (err) { toast(err.message, 'error'); } finally { S.busy(btn, false); }
+      };
+      item.querySelector('.edit-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = S.formData(e.target);
+        const { error } = await sb.from('students').update({ first_name: f.first_name, grade: +f.grade }).eq('id', id);
+        if (error) return toast(S.cleanErr(error), 'error');
+        toast('Saved.', 'ok'); loadAll();
+      };
+    });
+  }
+
+  $('#addStudentForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const f = S.formData(e.target);
+    const { error } = await sb.from('students').insert({ family_id: me.family_id, first_name: f.first_name, grade: +f.grade });
+    if (error) return toast(S.cleanErr(error), 'error');
+    e.target.reset(); toast(`${f.first_name} added! A director will assign a club.`, 'ok'); loadAll();
+  };
+
+  /* ── Family / address (5.2.1) ───────────────────────────────── */
+  function renderFamily() {
+    for (const k of ['address_line1', 'address_line2', 'city', 'state', 'zip', 'emergency_name', 'emergency_phone']) { const el = $('#' + k); if (el) el.value = family[k] || ''; }
+    $('#full_name').value = me.profile?.full_name || ''; $('#email').value = me.email; $('#phone').value = me.profile?.phone || '';
+    $('#addressStatus').innerHTML = family.address_line1
+      ? (family.address_validated
+          ? `<div class="notice notice--ok">✅ Address verified with USPS on ${esc(fmtDate(family.address_validated_at))}.</div>`
+          : `<div class="notice notice--warn">⚠️ This address has not been verified yet. Click <strong>Check &amp; save</strong> so we can confirm it.</div>`)
+      : `<div class="notice notice--warn">We don't have a mailing address yet — your student can't receive a book until we do.</div>`;
+  }
+  async function checkOrderedWarning() {
+    // Warn if an order for an upcoming session has already been placed (5.2.1)
+    const clubIds = [...new Set(students.filter(s => s.enrolled && s.club_id).map(s => s.club_id))];
+    if (!clubIds.length) return;
+    const data = Object.values(scheduleByClub).flat().filter(r => ['ordered', 'shipped'].includes(r.status) && new Date(r.session_at) >= new Date());
+    if (data.length) {
+      $('#addressWarning').innerHTML = `<div class="notice notice--warn"><strong>Heads up:</strong> the package for <em>${esc(data[0].title)}</em> (${esc(fmtDate(data[0].session_at))}) has already been ordered to your current address. If you change it now, please also email us so we can redirect the shipment.</div>`;
+    }
+  }
+  $('#addressForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const f = S.formData(e.target); const btn = e.submitter; S.busy(btn, true, 'Checking with USPS…');
+    try {
+      const r = await fn('validate-address', f);
+      if (r.validated) toast('Address verified and saved! ' + (r.changed ? 'We tidied the formatting to match USPS.' : ''), 'ok');
+      else toast(r.message || 'Saved, but we could not verify this address. Please double-check it.', 'warn', 7000);
+      await loadAll();
+    } catch (err) { toast(err.message, 'error'); } finally { S.busy(btn, false); }
+  };
+  $('#contactForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const f = S.formData(e.target);
+    const [{ error: e1 }, { error: e2 }] = await Promise.all([
+      sb.from('profiles').update({ full_name: f.full_name, phone: f.phone || null }).eq('user_id', me.user_id),
+      sb.from('families').update({ emergency_name: f.emergency_name || null, emergency_phone: f.emergency_phone || null }).eq('id', me.family_id),
+    ]);
+    if (e1 || e2) return toast(S.cleanErr(e1 || e2), 'error');
+    me.profile = Object.assign(me.profile || {}, { full_name: f.full_name, phone: f.phone });
+    toast('Contacts saved.', 'ok'); loadAll();
+  };
+
+  /* ── Schedule + calendar (5.2.2 / 5.2.3) ────────────────────── */
+  async function renderSchedule() {
+    const wrap = $('#scheduleWrap'); wrap.innerHTML = '';
+    const byClub = {};
+    students.filter(s => s.enrolled && s.club_id).forEach(s => (byClub[s.club_id] = byClub[s.club_id] || []).push(s.first_name));
+    if (!Object.keys(byClub).length) { wrap.innerHTML = '<div class="notice">Once a director assigns your student to a club, the book and schedule will appear here.</div>'; }
+    for (const clubId of Object.keys(byClub)) {
+      const rows = scheduleByClub[clubId] || [];
+      const now = Date.now();
+      const upcoming = rows.filter(r => new Date(r.session_at) >= now);
+      const current = upcoming[0];
+      wrap.insertAdjacentHTML('beforeend', `
+        <div class="panel">
+          <h2>${esc(clubName(clubId))} <span class="subtle">· ${esc(byClub[clubId].join(', '))}</span></h2>
+          ${current ? `
+            <div class="item" style="margin:.75rem 0;">
+              ${current.book_image_url ? `<img src="${esc(current.book_image_url)}" alt="" style="width:70px;border-radius:8px;">` : '<span style="font-size:2.5rem;">📚</span>'}
+              <div class="item__main">
+                <div class="subtle">Next up · ${esc(fmtDateTime(current.session_at))}</div>
+                <div class="item__title">${esc(current.book_title || current.title)}</div>
+                <div class="item__meta">${esc(current.book_author ? 'by ' + current.book_author : '')} ${badge(current.status)}</div>
+              </div>
+              <a class="btn btn--outline-purple btn--sm" target="_blank" rel="noopener" href="${esc(S.googleCalendarUrl(current))}">Add to Google Calendar</a>
+            </div>
+            ${upcoming[1] ? `<p class="subtle">After that: <strong>${esc(upcoming[1].book_title || upcoming[1].title)}</strong> on ${esc(fmtDate(upcoming[1].session_at))}.</p>` : ''}
+          ` : '<p class="subtle">No upcoming sessions scheduled yet.</p>'}
+          <h3 style="margin-top:1rem;">Full schedule</h3>
+          <ul class="cal-list">${rows.length ? rows.map(r => `
+            <li><div class="cal-date"><small>${esc(new Date(r.session_at).toLocaleDateString('en-US', { month: 'short', timeZone: 'America/New_York' }))}</small><b>${esc(new Date(r.session_at).toLocaleDateString('en-US', { day: 'numeric', timeZone: 'America/New_York' }))}</b></div>
+              <div class="item__main"><div class="item__title">${esc(r.title)}</div><div class="item__meta">${esc(S.fmtTime(r.session_at))} · ${esc(r.book_title || 'Book to be announced')} ${badge(r.status)}</div></div>
+              <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener" href="${esc(S.googleCalendarUrl(r))}">+ Google</a></li>`).join('') : '<li class="subtle">Nothing scheduled yet.</li>'}
+          </ul>
+        </div>`);
+    }
+    const url = S.icalFeedUrl(family.calendar_token);
+    $('#icalUrl').value = url; $('#webcalLink').href = url.replace(/^https?:/, 'webcal:');
+    checkOrderedWarning();
+  }
+  $('#copyIcal').onclick = async () => { try { await navigator.clipboard.writeText($('#icalUrl').value); toast('Link copied!', 'ok'); } catch (_) { $('#icalUrl').select(); } };
+  $('#rotateIcal').onclick = async () => {
+    if (!confirm('Create a new calendar link? The old one will stop working.')) return;
+    try { await rpc('rotate_calendar_token'); toast('New link ready.', 'ok'); loadAll(); } catch (e) { toast(e.message, 'error'); }
+  };
+
+  /* ── Consents (3.1 / 5.2.5) ─────────────────────────────────── */
+  async function renderConsents() {
+    const [{ data: docs }, { data: mine }] = await Promise.all([
+      sb.from('consent_docs').select('*').eq('is_current', true).order('kind'),
+      sb.from('consents').select('*').eq('family_id', me.family_id).order('accepted_at', { ascending: false }),
+    ]);
+    $('#consentList').innerHTML = (docs || []).map(d => {
+      const signed = (mine || []).find(c => c.kind === d.kind && c.version === d.version);
+      return `<div class="item">
+        <div class="item__main"><div class="item__title">${esc(d.title)}</div>
+          <div class="item__meta">Version ${esc(d.version)} · ${signed ? 'Accepted ' + esc(fmtDateTime(signed.accepted_at)) : 'Not yet accepted'}</div></div>
+        <a class="btn btn--ghost btn--sm" href="${esc(d.url)}" target="_blank" rel="noopener">Read</a>
+        ${signed ? '<span class="pill pill--green">Signed</span>' : `<button class="btn btn--primary btn--sm" data-kind="${esc(d.kind)}" data-version="${esc(d.version)}">I agree</button>`}
+      </div>`;
+    }).join('');
+    $$('#consentList button[data-kind]').forEach(b => b.onclick = async () => {
+      const { error } = await sb.from('consents').insert({ family_id: me.family_id, kind: b.dataset.kind, version: b.dataset.version, accepted_by: me.user_id });
+      if (error) return toast(S.cleanErr(error), 'error');
+      toast('Thank you!', 'ok'); renderConsents();
+    });
+  }
+
+  async function checkMissingConsents() {
+    const [{ data: docs }, { data: mine }] = await Promise.all([
+      sb.from('consent_docs').select('kind,version,title').eq('is_current', true),
+      sb.from('consents').select('kind,version').eq('family_id', me.family_id),
+    ]);
+    const missing = (docs || []).filter(d => !(mine || []).some(c => c.kind === d.kind && c.version === d.version));
+    if (missing.length) {
+      toast(`Please review and accept: ${missing.map(d => d.title).join(', ')}`, 'warn', 8000);
+      $('[aria-controls="t-consents"]').click();
+    }
+  }
+
+  /* ── Feedback (parent-visible, 5.1.4) ───────────────────────── */
+  async function renderFeedback() {
+    const ids = students.map(s => s.id); if (!ids.length) { $('#feedbackList').innerHTML = '<p class="subtle">No students yet.</p>'; return; }
+    const { data } = await sb.from('feedback').select('*').in('student_id', ids).order('created_at', { ascending: false });
+    $('#feedbackList').innerHTML = (data || []).length ? data.map(f => `<div class="item"><div class="item__main">
+      <div class="item__title">${esc(students.find(s => s.id === f.student_id)?.first_name)} · ${'⭐'.repeat(f.rating)} <span class="subtle">${esc(sessionTitle[f.session_id] || '')}</span></div>
+      <div class="item__meta">${esc(fmtDateTime(f.created_at))}</div>
+      ${f.book_thoughts ? `<p style="margin-top:.4rem;"><strong>About the book:</strong> ${esc(f.book_thoughts)}</p>` : ''}
+      ${f.note_to_leader ? `<p><strong>To the leader:</strong> ${esc(f.note_to_leader)}</p>` : ''}
+    </div></div>`).join('') : '<p class="subtle">No feedback sent yet.</p>';
+  }
+
+  /* ── Data export / deletion (Section 8) ─────────────────────── */
+  $('#exportBtn').onclick = async () => {
+    try {
+      const data = await rpc('export_my_family');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+      a.download = 'sparks-family-data.json'; a.click();
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  $('#deleteBtn').onclick = async () => {
+    if (!confirm('Request deletion of your family account and all student records? A director will confirm by email.')) return;
+    try {
+      await rpc('request_deletion');
+      for (const st of students.filter(s => s.enrolled)) await rpc('set_enrollment', { p_student_id: st.id, p_enrolled: false });
+      toast('Deletion requested. Your students are withdrawn from upcoming sessions.', 'ok', 7000); loadAll();
+    } catch (e) { toast(e.message, 'error'); }
+  };
+
+  await loadAll();
+})();
+</script>
+</body>
+</html>

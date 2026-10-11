@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Create a Family Account — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+
+<nav class="pnav">
+  <div class="pnav__inner">
+    <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
+    <div class="pnav__links"><a href="index.html">← Sign in</a></div>
+  </div>
+</nav>
+
+<main class="portal portal--narrow">
+  <div class="auth-card panel" style="max-width:560px;">
+    <h1>Create a Parent Account</h1>
+    <p class="subtle">A parent or guardian owns the family account. You'll add your student and create their login from inside your account — we never ask children for an email address.</p>
+
+    <form id="signupForm" novalidate style="margin-top:1.25rem;">
+      <div class="field">
+        <label for="full_name">Your full name</label>
+        <input id="full_name" name="full_name" type="text" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+        <div class="hint">We'll send a confirmation link here.</div>
+      </div>
+      <div class="field">
+        <label for="phone">Phone (optional)</label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="hint">At least 8 characters.</div>
+      </div>
+
+      <div id="consentDocs" class="notice">Loading our agreements…</div>
+
+      <button class="btn btn--primary btn--block" type="submit">Create account</button>
+    </form>
+    <p class="auth-footer">Already have an account? <a href="index.html">Sign in</a></p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  S.requireConfig();
+  const { $, toast, sb, esc } = S;
+
+  // Consent documents (Section 3.1): must be presented at signup; we record version + timestamp.
+  // Anonymous visitors may read only the *current* documents (RLS policy consent_docs_anon).
+  let docs = [];
+  try {
+    const { data, error } = await sb.from('consent_docs').select('kind,version,title,url').eq('is_current', true).order('kind');
+    if (error) throw error;
+    docs = data || [];
+  } catch (e) { console.warn(e); }
+  if (!docs.length) {
+    $('#consentDocs').className = 'notice notice--error';
+    $('#consentDocs').textContent = 'We could not load the Terms of Service and Privacy Policy. Please try again in a moment.';
+  } else {
+    $('#consentDocs').className = 'panel';
+    $('#consentDocs').style.background = 'var(--gray-lt)';
+    $('#consentDocs').innerHTML = `<strong>Please read and accept:</strong>` + docs.map(d => `
+      <label class="check">
+        <input type="checkbox" name="consent_${esc(d.kind)}" data-version="${esc(d.version)}" required>
+        <span>I have read and agree to the <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.title)}</a> <span class="subtle">(version ${esc(d.version)})</span></span>
+      </label>`).join('');
+  }
+
+  $('#signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = S.formData(e.target);
+    if (!f.full_name || !f.email || f.password.length < 8) return toast('Please fill in your name, email, and a password of 8+ characters.', 'error');
+    const consents = {};
+    for (const d of docs) {
+      const box = e.target.querySelector(`[name=consent_${d.kind}]`);
+      if (!box || !box.checked) return toast(`Please accept the ${d.title} to continue.`, 'error');
+      consents[d.kind] = d.version;
+    }
+    const btn = e.submitter; S.busy(btn, true, 'Creating…');
+    const { data, error } = await sb.auth.signUp({
+      email: f.email, password: f.password,
+      options: {
+        emailRedirectTo: location.origin + location.pathname.replace(/signup\.html$/, 'parent.html'),
+        data: { kind: 'parent', full_name: f.full_name, phone: f.phone || '', consents },
+      },
+    });
+    S.busy(btn, false);
+    if (error) return toast(error.message, 'error');
+    if (data.session) { location.replace('parent.html'); return; }
+    document.querySelector('main').innerHTML = `<div class="panel auth-card">
+      <h1>Check your email ✉️</h1>
+      <p>We sent a confirmation link to <strong>${esc(f.email)}</strong>. Click it to finish creating your account, then sign in.</p>
+      <p class="subtle">Didn't get it? Check spam, or <a href="index.html">sign in</a> and we'll resend it.</p></div>`;
+  });
+})();
+</script>
+</body>
+</html>

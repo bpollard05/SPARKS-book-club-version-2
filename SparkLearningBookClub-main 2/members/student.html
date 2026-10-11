@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>My Book Club — SPARKS</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+<nav class="pnav" id="portalNav"></nav>
+
+<main class="portal kid">
+  <h1 id="hello">Hi! 👋</h1>
+
+  <!-- 5.1.1 This month's book -->
+  <section id="bookHero" class="book-hero" style="margin:1rem 0 1.5rem;">
+    <div class="cover-ph">📚</div>
+    <div>
+      <span class="eyebrow">This month's book</span>
+      <h2 id="bookTitle">Loading…</h2>
+      <p id="bookAuthor"></p>
+      <p id="bookIntro" style="margin-top:.75rem;"></p>
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <!-- 5.1.2 Countdown -->
+    <section class="panel countdown">
+      <div class="countdown__num" id="countNum">–</div>
+      <div class="countdown__label" id="countLabel">days until your next book club</div>
+      <p class="subtle" id="countWhen"></p>
+      <a id="joinBtn" class="btn btn--gold" href="#" target="_blank" rel="noopener" hidden>Join the meeting 💻</a>
+    </section>
+
+    <!-- 5.1.3 Reading pacing helper -->
+    <section class="panel">
+      <h2>Reading helper 📖</h2>
+      <p id="pacing">Loading…</p>
+      <p class="subtle" style="margin-top:.75rem;">It's okay if you don't finish! Everyone can join the discussion.</p>
+    </section>
+  </div>
+
+  <!-- 5.1.2 Calendar -->
+  <section class="panel">
+    <h2>Coming up 📅</h2>
+    <ul class="cal-list" id="calList"></ul>
+  </section>
+
+  <!-- 5.1.4 Feedback form (one-way, structured) -->
+  <section class="panel">
+    <h2>Tell your leader what you thought ✉️</h2>
+    <p class="subtle">Your leader and your grown-up can read this. Your leader can't write back here, but they'll talk about it at book club!</p>
+    <form id="feedbackForm" style="margin-top:1rem;">
+      <div class="field">
+        <label for="fb_session">Which book club?</label>
+        <select id="fb_session" name="session_id" required></select>
+      </div>
+      <div class="field">
+        <label>How many stars for this book?</label>
+        <div class="stars" role="radiogroup" aria-label="Star rating">
+          <button type="button" role="radio" aria-checked="false" data-v="1" aria-label="1 star">⭐</button>
+          <button type="button" role="radio" aria-checked="false" data-v="2" aria-label="2 stars">⭐</button>
+          <button type="button" role="radio" aria-checked="false" data-v="3" aria-label="3 stars">⭐</button>
+          <button type="button" role="radio" aria-checked="false" data-v="4" aria-label="4 stars">⭐</button>
+          <button type="button" role="radio" aria-checked="false" data-v="5" aria-label="5 stars">⭐</button>
+        </div>
+        <input type="hidden" name="rating" id="rating">
+      </div>
+      <div class="field">
+        <label for="book_thoughts">What did you think of the book?</label>
+        <textarea id="book_thoughts" name="book_thoughts" maxlength="2000" placeholder="My favorite part was…"></textarea>
+      </div>
+      <div class="field">
+        <label for="note_to_leader">Anything you want your leader to know?</label>
+        <textarea id="note_to_leader" name="note_to_leader" maxlength="2000" placeholder="Optional"></textarea>
+      </div>
+      <button class="btn btn--primary" type="submit">Send to my leader 🚀</button>
+    </form>
+    <div id="sentList" class="list" style="margin-top:1.25rem;"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  const me = await S.requireAuth(['student']);
+  const { $, $$, sb, esc, toast, rpc, fmtDate, fmtTime, daysUntil } = S;
+  const st = me.student;
+  $('#hello').textContent = `Hi, ${st.first_name}! 👋`;
+
+  if (!st.club_id) {
+    $('#bookTitle').textContent = "You're not in a club yet";
+    $('#bookIntro').textContent = 'Ask your grown-up to check with SPARKS. Your book will show up here soon!';
+    $('#pacing').textContent = 'Nothing to read yet — check back soon!';
+    return;
+  }
+
+  let rows = [];
+  try { rows = await rpc('club_schedule', { p_club_id: st.club_id }); } catch (e) { toast(e.message, 'error'); }
+  const now = Date.now();
+  const upcoming = rows.filter(r => new Date(r.session_at).getTime() + (r.duration_min || 60) * 60000 >= now);
+  const past = rows.filter(r => new Date(r.session_at).getTime() + (r.duration_min || 60) * 60000 < now);
+  const next = upcoming[0];
+
+  /* ── This month's book ── */
+  if (next) {
+    $('#bookTitle').textContent = next.book_title || next.title;
+    $('#bookAuthor').textContent = next.book_author ? 'by ' + next.book_author : '';
+    $('#bookIntro').textContent = next.intro || '';
+    if (next.book_image_url) $('.cover-ph').outerHTML = `<img src="${esc(next.book_image_url)}" alt="Book cover: ${esc(next.book_title || '')}">`;
+  } else {
+    $('#bookTitle').textContent = 'No book club scheduled yet';
+    $('#bookIntro').textContent = 'Your leader is planning the next one. Check back soon!';
+  }
+
+  /* ── Countdown ── */
+  if (next) {
+    const d = daysUntil(next.session_at);
+    const sameDay = new Date(next.session_at).toDateString() === new Date().toDateString();
+    $('#countNum').textContent = sameDay ? '🎉' : Math.max(d, 0);
+    $('#countLabel').textContent = sameDay ? "It's book club day!" : (d === 1 ? 'day until your next book club' : 'days until your next book club');
+    $('#countWhen').textContent = `${fmtDate(next.session_at, { weekday: 'long' })} at ${fmtTime(next.session_at)}`;
+    if (next.meeting_url) { $('#joinBtn').href = next.meeting_url; $('#joinBtn').hidden = false; }
+  } else { $('#countNum').textContent = '…'; $('#countLabel').textContent = 'No session scheduled yet'; }
+
+  /* ── Pacing helper (static tips, no AI) ── */
+  if (next && next.book_pages) {
+    const days = Math.max(daysUntil(next.session_at), 1);
+    const perDay = Math.ceil(next.book_pages / days);
+    $('#pacing').innerHTML = `Your book has <strong>${esc(next.book_pages)} pages</strong> and book club is in <strong>${esc(days)} day${days === 1 ? '' : 's'}</strong>.<br>About <strong>${esc(perDay)} page${perDay === 1 ? '' : 's'} a day</strong> gets you there! 🌟`;
+  } else if (next) {
+    $('#pacing').textContent = 'Try reading a little every day — even 10 minutes adds up!';
+  } else { $('#pacing').textContent = 'Nothing to read yet — check back soon!'; }
+
+  /* ── Calendar ── */
+  $('#calList').innerHTML = upcoming.length ? upcoming.map(r => `
+    <li><div class="cal-date"><small>${esc(new Date(r.session_at).toLocaleDateString('en-US', { month: 'short', timeZone: 'America/New_York' }))}</small><b>${esc(new Date(r.session_at).toLocaleDateString('en-US', { day: 'numeric', timeZone: 'America/New_York' }))}</b></div>
+      <div class="item__main"><div class="item__title">${esc(r.book_title || r.title)}</div><div class="item__meta">${esc(fmtDate(r.session_at, { weekday: 'long' }))} · ${esc(fmtTime(r.session_at))}</div></div></li>`).join('')
+    : '<li class="subtle">Nothing on the calendar yet.</li>';
+
+  /* ── Feedback ── */
+  const choices = [...past.slice(-3).reverse(), ...(next ? [next] : [])];
+  $('#fb_session').innerHTML = choices.length
+    ? choices.map(r => `<option value="${esc(r.id)}">${esc(r.book_title || r.title)} (${esc(fmtDate(r.session_at, { year: undefined }))})</option>`).join('')
+    : '<option value="">No book club yet</option>';
+  $$('.stars button').forEach(b => b.onclick = () => {
+    const v = +b.dataset.v; $('#rating').value = v;
+    $$('.stars button').forEach(x => { x.setAttribute('aria-checked', +x.dataset.v === v); x.classList.toggle('lit', +x.dataset.v <= v); });
+  });
+  $('#feedbackForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const f = S.formData(e.target);
+    if (!f.session_id) return toast('There is no book club to talk about yet!', 'error');
+    if (!f.rating) return toast('Pick how many stars first ⭐', 'error');
+    const btn = e.submitter; S.busy(btn, true, 'Sending…');
+    const { error } = await sb.from('feedback').insert({ session_id: f.session_id, student_id: st.id, rating: +f.rating, book_thoughts: f.book_thoughts || null, note_to_leader: f.note_to_leader || null });
+    S.busy(btn, false);
+    if (error) return toast('Oops, that did not send. Try again!', 'error');
+    toast('Sent! Your leader will see it. 🎉', 'ok');
+    e.target.reset(); $$('.stars button').forEach(x => { x.setAttribute('aria-checked', 'false'); x.classList.remove('lit'); });
+    loadSent();
+  };
+  async function loadSent() {
+    const { data } = await sb.from('feedback').select('rating,book_thoughts,created_at,session_id').eq('student_id', st.id).order('created_at', { ascending: false }).limit(5);
+    $('#sentList').innerHTML = (data || []).map(f => `<div class="item"><div class="item__main"><div class="item__title">${'⭐'.repeat(f.rating)} <span class="subtle">${esc(rows.find(r => r.id === f.session_id)?.book_title || rows.find(r => r.id === f.session_id)?.title || '')}</span></div><div class="item__meta">Sent ${esc(fmtDate(f.created_at))}</div></div></div>`).join('');
+  }
+  loadSent();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Reset Password — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+
+<nav class="pnav">
+  <div class="pnav__inner">
+    <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
+    <div class="pnav__links"><a href="index.html">← Sign in</a></div>
+  </div>
+</nav>
+
+<main class="portal portal--narrow">
+  <div class="auth-card panel">
+    <div id="request">
+      <h1>Reset your password</h1>
+      <p class="subtle">Enter your email and we'll send you a link to choose a new password.</p>
+      <form id="requestForm" novalidate style="margin-top:1rem;">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Send reset link</button>
+      </form>
+      <p class="auth-footer">Students: ask your parent to set a new secret word from their Family account.</p>
+    </div>
+
+    <div id="update" hidden>
+      <h1>Choose a new password</h1>
+      <form id="updateForm" novalidate style="margin-top:1rem;">
+        <div class="field">
+          <label for="password">New password</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+          <div class="hint">At least 8 characters.</div>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Save password</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  S.requireConfig();
+  const { $, toast, sb } = S;
+
+  // When the user arrives from the email link, Supabase fires PASSWORD_RECOVERY.
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') { $('#request').hidden = true; $('#update').hidden = false; }
+  });
+  if (/type=recovery/.test(location.hash) || /type=recovery/.test(location.search)) { $('#request').hidden = true; $('#update').hidden = false; }
+
+  $('#requestForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { email } = S.formData(e.target);
+    const btn = e.submitter; S.busy(btn, true, 'Sending…');
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    S.busy(btn, false);
+    if (error) return toast(error.message, 'error');
+    $('#request').innerHTML = '<h1>Check your email ✉️</h1><p>If an account exists for that address, a reset link is on its way.</p>';
+  });
+
+  $('#updateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { password } = S.formData(e.target);
+    if (password.length < 8) return toast('Password must be at least 8 characters.', 'error');
+    const btn = e.submitter; S.busy(btn, true, 'Saving…');
+    const { error } = await sb.auth.updateUser({ password });
+    S.busy(btn, false);
+    if (error) return toast(error.message, 'error');
+    toast('Password updated!', 'ok');
+    setTimeout(() => location.replace('index.html'), 800);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Sign In — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+
+<nav class="pnav">
+  <div class="pnav__inner">
+    <a href="../index.html" class="pnav__brand"><img src="../images/logo/logo.png" alt="SPARKS Book Club"></a>
+    <div class="pnav__links"><a href="../index.html">← Back to site</a></div>
+  </div>
+</nav>
+
+<main class="portal portal--narrow">
+  <div class="auth-card panel">
+    <h1 class="text-center">Members Sign In</h1>
+    <p class="subtle text-center">Parents, leaders, directors — and students!</p>
+
+    <div class="tabs" role="tablist" style="margin-top:1rem;">
+      <button role="tab" aria-selected="true" aria-controls="tab-adult" id="tabAdult">Parent / Leader / Director</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-student" id="tabStudent">Student</button>
+    </div>
+
+    <div id="tab-adult" role="tabpanel" aria-labelledby="tabAdult">
+      <form id="adultForm" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Sign in</button>
+      </form>
+      <p class="auth-footer">
+        <a href="reset.html">Forgot your password?</a> ·
+        New family? <a href="signup.html"><strong>Create a parent account</strong></a>
+      </p>
+    </div>
+
+    <div id="tab-student" role="tabpanel" aria-labelledby="tabStudent" hidden>
+      <form id="studentForm" class="kid" novalidate>
+        <div class="field">
+          <label for="username">Your username</label>
+          <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="e.g. maya_reads">
+        </div>
+        <div class="field">
+          <label for="secret">Your secret word</label>
+          <input id="secret" name="secret" type="password" autocomplete="current-password" required>
+          <div class="hint">Ask a grown-up if you forgot it — they can set a new one.</div>
+        </div>
+        <button class="btn btn--gold btn--block" type="submit">Let's go! ✨</button>
+      </form>
+    </div>
+
+    <div id="chooser" hidden>
+      <p class="text-center"><strong>Where would you like to go?</strong></p>
+      <div class="btn-row" style="justify-content:center;" id="chooserBtns"></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  S.requireConfig();
+  const { $, $$, toast, sb } = S;
+
+  // Tabs
+  $$('[role=tab]').forEach(tab => tab.addEventListener('click', () => {
+    $$('[role=tab]').forEach(t => t.setAttribute('aria-selected', t === tab));
+    $$('[role=tabpanel]').forEach(p => p.hidden = p.id !== tab.getAttribute('aria-controls'));
+  }));
+
+  const next = new URLSearchParams(location.search).get('next');
+  if (new URLSearchParams(location.search).get('msg') === 'unset') toast("This account isn't set up yet. Please contact SPARKS.", 'error', 8000);
+
+  async function afterLogin() {
+    const me = await S.whoami();
+    const roles = me.roles || [];
+    const dests = [];
+    if (roles.includes('director')) dests.push(['director.html', 'Director dashboard']);
+    if (roles.includes('leader'))   dests.push(['leader.html', 'Leader planner']);
+    if (roles.includes('parent'))   dests.push(['parent.html', 'Family account']);
+    if (me.student)                 dests.push(['student.html', 'My book club']);
+    if (next && dests.some(d => d[0] === next)) { location.replace(next); return; }
+    if (dests.length === 1) { location.replace(dests[0][0]); return; }
+    if (dests.length === 0) { await sb.auth.signOut(); toast("This account isn't set up yet. Please contact SPARKS.", 'error', 8000); return; }
+    $$('[role=tabpanel], .tabs').forEach(e => e.hidden = true);
+    $('#chooser').hidden = false;
+    $('#chooserBtns').innerHTML = dests.map(([h, l]) => `<a class="btn btn--primary" href="${h}">${l}</a>`).join('');
+  }
+
+  // Already signed in? Route straight through.
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { try { await afterLogin(); } catch (e) { console.warn(e); } }
+
+  $('#adultForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.submitter; S.busy(btn, true, 'Signing in…');
+    const { email, password } = S.formData(e.target);
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    S.busy(btn, false);
+    if (error) return toast(error.message === 'Invalid login credentials' ? 'That email or password is not right.' : error.message, 'error');
+    await afterLogin();
+  });
+
+  $('#studentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.submitter; S.busy(btn, true, 'One sec…');
+    const { username, secret } = S.formData(e.target);
+    if (!/^[a-z0-9_]{3,20}$/i.test(username)) { S.busy(btn, false); return toast('Usernames are 3–20 letters, numbers or _', 'error'); }
+    const { error } = await sb.auth.signInWithPassword({ email: S.studentEmail(username), password: secret });
+    S.busy(btn, false);
+    if (error) return toast("Hmm, that username or secret word isn't right. Ask a grown-up for help!", 'error');
+    await afterLogin();
+  });
+})();
+</script>
+</body>
+</html>

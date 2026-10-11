@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Leader Planner — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+<nav class="pnav" id="portalNav"></nav>
+
+<main class="portal">
+  <div class="panel__head">
+    <div><h1>Leader Planner</h1><p class="subtle" id="welcome">Loading…</p></div>
+    <button class="btn btn--primary" id="newBtn" type="button">+ Plan a session</button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  aria-controls="t-sessions">Sessions &amp; requests</button>
+    <button role="tab" aria-selected="false" aria-controls="t-roster">Roster</button>
+    <button role="tab" aria-selected="false" aria-controls="t-feedback">Feedback digest</button>
+  </div>
+
+  <section id="t-sessions" role="tabpanel">
+    <div id="editor" class="panel" hidden></div>
+    <div id="sessionList" class="list"></div>
+  </section>
+
+  <section id="t-roster" role="tabpanel" hidden>
+    <div id="rosterWrap"></div>
+  </section>
+
+  <section id="t-feedback" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="field"><label for="digestSession">Session</label><select id="digestSession"></select></div>
+      <div id="digest"></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  const me = await S.requireAuth(['leader', 'director']);
+  const { $, $$, sb, esc, toast, badge, fmtDate, fmtDateTime, fmtMoney, rpc, fn } = S;
+
+  $$('[role=tab]').forEach(tab => tab.addEventListener('click', () => {
+    $$('[role=tab]').forEach(t => t.setAttribute('aria-selected', t === tab));
+    $$('[role=tabpanel]').forEach(p => p.hidden = p.id !== tab.getAttribute('aria-controls'));
+  }));
+
+  let clubs = [], sessions = [], settings = {};
+  const STEPS = ['draft', 'submitted', 'approved', 'ordered', 'shipped', 'delivered'];
+
+  async function loadAll() {
+    const isDirector = (me.roles || []).includes('director');
+    const [{ data: c }, { data: st }] = await Promise.all([
+      isDirector ? sb.from('clubs').select('*').eq('active', true).order('name') : sb.from('clubs').select('*').in('id', me.led_clubs || []).order('name'),
+      sb.from('settings').select('*').eq('id', 1).single(),
+    ]);
+    clubs = c || []; settings = st || {};
+    $('#welcome').textContent = clubs.length ? `${me.profile?.full_name || ''} · ${clubs.map(x => x.name).join(', ')}` : 'You are not assigned to a club yet. Ask a director.';
+    const { data: s } = await sb.from('sessions').select('*, session_items(*)').in('club_id', clubs.map(x => x.id)).order('session_at', { ascending: false });
+    sessions = s || [];
+    renderSessions(); renderRoster(); renderDigestChooser();
+  }
+  const clubName = (id) => clubs.find(c => c.id === id)?.name || '';
+
+  function stepsHtml(status) {
+    if (status === 'cancelled') return '<div class="steps"><span class="bad">Cancelled</span></div>';
+    const idx = status === 'changes_requested' ? 1 : STEPS.indexOf(status);
+    return '<div class="steps">' + STEPS.map((s, i) => {
+      const cls = i < idx ? 'done' : (i === idx ? (status === 'changes_requested' ? 'bad' : 'now') : '');
+      const label = i === 1 && status === 'changes_requested' ? 'Changes requested' : S.STATUS[s].label;
+      return `<span class="${cls}">${esc(label)}</span>`;
+    }).join('') + '</div>';
+  }
+
+  /* ── Session list (4.3 status always visible) ─────────────── */
+  function renderSessions() {
+    const box = $('#sessionList');
+    if (!sessions.length) { box.innerHTML = '<div class="notice">No sessions yet. Click <strong>Plan a session</strong> to start.</div>'; return; }
+    box.innerHTML = sessions.map(s => {
+      const book = (s.session_items || []).find(i => i.kind === 'book');
+      return `<div class="item item--clickable" data-id="${esc(s.id)}">
+        ${book?.image_url ? `<img src="${esc(book.image_url)}" alt="" style="width:48px;border-radius:6px;">` : '<span style="font-size:2rem;">📚</span>'}
+        <div class="item__main">
+          <div class="item__title">${esc(s.title)} ${badge(s.status)}</div>
+          <div class="item__meta">${esc(clubName(s.club_id))} · ${esc(fmtDateTime(s.session_at))} · ${esc(book?.title || 'No book yet')}
+            ${s.order_by_date ? ` · order by <strong>${esc(fmtDate(s.order_by_date + 'T12:00:00'))}</strong>` : ''}</div>
+          ${s.status === 'changes_requested' && s.decision_comment ? `<div class="notice notice--error" style="margin:.5rem 0 0;"><strong>Director asked for changes:</strong> ${esc(s.decision_comment)}</div>` : ''}
+          ${stepsHtml(s.status)}
+        </div>
+      </div>`;
+    }).join('');
+    $$('#sessionList .item').forEach(el => el.onclick = () => openEditor(sessions.find(s => s.id === el.dataset.id)));
+  }
+
+  /* ── Session planner / editor (4.1, 4.2) ───────────────────── */
+  $('#newBtn').onclick = () => openEditor(null);
+
+  function itemRow(it = {}, kind = 'activity') {
+    return `<div class="item" data-item-id="${esc(it.id || '')}" data-kind="${esc(it.kind || kind)}" style="align-items:flex-start;">
+      <div class="item__main">
+        <div class="field"><label>${(it.kind || kind) === 'book' ? 'Book' : 'Activity / materials'} link (Amazon, bookshop.org, …)</label>
+          <div class="copy-row"><input name="product_url" type="url" value="${esc(it.product_url || '')}" required placeholder="https://www.amazon.com/dp/…">
+          <button class="btn btn--outline-purple btn--sm" type="button" data-act="fetch">Look up</button></div></div>
+        <div class="field--inline">
+          <div class="field"><label>Title</label><input name="title" value="${esc(it.title || '')}" required></div>
+          <div class="field"><label>${(it.kind || kind) === 'book' ? 'Author' : 'Brand / notes'}</label><input name="author" value="${esc(it.author || '')}"></div>
+        </div>
+        <div class="field--inline">
+          <div class="field"><label>Price each ($)</label><input name="price" type="number" step="0.01" min="0" value="${it.unit_price_cents != null ? (it.unit_price_cents / 100).toFixed(2) : ''}"></div>
+          <div class="field"><label>Image URL (optional)</label><input name="image_url" type="url" value="${esc(it.image_url || '')}"></div>
+        </div>
+      </div>
+      ${(it.kind || kind) === 'book' ? '' : '<button class="btn btn--ghost btn--sm" type="button" data-act="remove">Remove</button>'}
+    </div>`;
+  }
+
+  function openEditor(s) {
+    const ed = $('#editor'); ed.hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
+    const editable = !s || ['draft', 'changes_requested'].includes(s.status);
+    const items = s?.session_items || [];
+    const book = items.find(i => i.kind === 'book') || {};
+    const acts = items.filter(i => i.kind === 'activity');
+    const d = s ? new Date(s.session_at) : null;
+    const pad = (n) => String(n).padStart(2, '0');
+    ed.innerHTML = `
+      <div class="panel__head"><h2>${s ? esc(s.title) : 'Plan a session'} ${s ? badge(s.status) : ''}</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="closeEd">Close</button></div>
+      ${s && !editable ? `<div class="notice">This request is <strong>${esc(S.STATUS[s.status].label)}</strong> and can no longer be edited. ${s.decision_comment ? 'Director note: ' + esc(s.decision_comment) : ''}</div>` : ''}
+      ${s && s.required_qty ? `<div class="kpi" style="margin-bottom:1rem;"><div><b>${esc(s.required_qty)}</b><span>copies needed</span></div><div><b>${esc(fmtMoney(s.estimated_cost_cents))}</b><span>estimated cost</span></div><div><b>${esc(fmtDate(s.order_by_date + 'T12:00:00', { year: undefined }))}</b><span>order by</span></div></div>` : ''}
+      <form id="sessionForm" ${editable ? '' : 'inert style="opacity:.75"'}>
+        <div class="field--inline">
+          <div class="field"><label for="club_id">Club</label><select id="club_id" name="club_id" required>${clubs.map(c => `<option value="${esc(c.id)}" ${s?.club_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+          <div class="field"><label for="title">Session title</label><input id="title" name="title" value="${esc(s?.title || '')}" required placeholder="e.g. November: Crenshaw"></div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label for="date">Date</label><input id="date" name="date" type="date" value="${d ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` : ''}" required></div>
+          <div class="field"><label for="time">Start time</label><input id="time" name="time" type="time" value="${d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : '16:00'}" required></div>
+          <div class="field"><label for="duration_min">Length (min)</label><input id="duration_min" name="duration_min" type="number" min="15" max="240" value="${esc(s?.duration_min || 60)}"></div>
+        </div>
+        <h3 style="margin:.75rem 0 .5rem;">The book</h3>
+        <div id="bookItem">${itemRow(Object.assign({ kind: 'book' }, book), 'book')}</div>
+        <div class="field" style="margin-top:.75rem;"><label for="book_pages">Pages in the book (for the student reading helper)</label><input id="book_pages" name="book_pages" type="number" min="1" value="${esc(s?.book_pages || '')}" style="max-width:200px;"></div>
+        <h3 style="margin:.75rem 0 .5rem;">Activity &amp; materials</h3>
+        <div id="activityItems" class="list">${acts.map(a => itemRow(a)).join('')}</div>
+        <button class="btn btn--outline-purple btn--sm" type="button" id="addActivity" style="margin-top:.5rem;">+ Add a materials link</button>
+        <div class="field" style="margin-top:1rem;"><label for="intro">Short intro for students (shown on their page)</label><textarea id="intro" name="intro" maxlength="600">${esc(s?.intro || '')}</textarea></div>
+        <div class="field"><label for="notes_for_director">Notes for the director</label><textarea id="notes_for_director" name="notes_for_director" maxlength="2000">${esc(s?.notes_for_director || '')}</textarea></div>
+        <div id="validation"></div>
+        ${editable ? `<div class="btn-row">
+          <button class="btn btn--outline-purple" type="submit" data-mode="save">Save draft</button>
+          <button class="btn btn--primary" type="submit" data-mode="submit">Save &amp; submit for approval</button>
+          ${s ? '<button class="btn btn--ghost" type="button" id="deleteSession">Delete</button>' : ''}
+        </div>` : ''}
+        <p class="hint" style="margin-top:.75rem;">We'll order <strong>enrolled students + 1 leader copy + ${esc(settings.spare_count ?? 1)} spare</strong> of each item, and the order must be placed <strong>${esc(settings.shipping_buffer_days ?? 10)} days</strong> before the session. Budget cap per session: <strong>${esc(fmtMoney(settings.budget_cap_cents ?? 30000))}</strong>.</p>
+      </form>`;
+    $('#closeEd').onclick = () => { ed.hidden = true; };
+    $('#addActivity').onclick = () => { $('#activityItems').insertAdjacentHTML('beforeend', itemRow()); bindItemButtons(); };
+    bindItemButtons();
+    if (s && editable) $('#deleteSession').onclick = async () => {
+      if (!confirm('Delete this session plan?')) return;
+      const { error } = await sb.from('sessions').delete().eq('id', s.id);
+      if (error) return toast(S.cleanErr(error), 'error');
+      toast('Deleted.', 'ok'); ed.hidden = true; loadAll();
+    };
+    $('#sessionForm').onsubmit = (e) => { e.preventDefault(); saveSession(s, e.submitter.dataset.mode === 'submit', e.submitter); };
+  }
+
+  function bindItemButtons() {
+    $$('#editor [data-act=remove]').forEach(b => b.onclick = () => b.closest('.item').remove());
+    $$('#editor [data-act=fetch]').forEach(b => b.onclick = async () => {
+      const row = b.closest('.item'); const url = row.querySelector('[name=product_url]').value.trim();
+      if (!url) return toast('Paste a link first.', 'warn');
+      S.busy(b, true, 'Looking…');
+      try {
+        const r = await fn('fetch-product', { url });
+        const set = (n, v) => { const el = row.querySelector(`[name=${n}]`); if (el && !el.value && v) el.value = v; };
+        set('title', r.title); set('author', r.author); set('image_url', r.image_url); set('price', r.price_cents != null ? (r.price_cents / 100).toFixed(2) : '');
+        toast(r.title ? 'Filled in what we could find — please check it.' : 'Could not read that page; please fill in the details by hand.', r.title ? 'ok' : 'warn');
+      } catch (err) {
+        const t = S.guessTitleFromUrl(url); const el = row.querySelector('[name=title]'); if (el && !el.value && t) el.value = t;
+        toast(err.message && !/non-2xx|Failed to send/i.test(err.message) ? err.message : 'Could not look that up automatically — please fill in the details by hand.', 'warn', 7000);
+      } finally { S.busy(b, false); }
+    });
+  }
+
+  async function saveSession(existing, submit, btn) {
+    const form = $('#sessionForm'); const f = S.formData(form);
+    const rows = [$('#bookItem .item'), ...$$('#activityItems .item')].map(row => ({
+      id: row.dataset.itemId || null, kind: row.dataset.kind,
+      product_url: row.querySelector('[name=product_url]').value.trim(),
+      title: row.querySelector('[name=title]').value.trim(),
+      author: row.querySelector('[name=author]').value.trim() || null,
+      image_url: row.querySelector('[name=image_url]').value.trim() || null,
+      unit_price_cents: row.querySelector('[name=price]').value === '' ? null : Math.round(parseFloat(row.querySelector('[name=price]').value) * 100),
+    }));
+    if (!f.title || !f.date) return toast('Please give the session a title and a date.', 'error');
+    if (rows.some(r => !r.product_url || !r.title)) return toast('Every item needs a link and a title.', 'error');
+    if (rows.some(r => !/^https?:\/\//i.test(r.product_url) || (r.image_url && !/^https?:\/\//i.test(r.image_url)))) return toast('Links must start with http:// or https://', 'error');
+    S.busy(btn, true, 'Saving…');
+    try {
+      const payload = { club_id: f.club_id, title: f.title, session_at: S.localToIso(f.date, f.time), duration_min: +f.duration_min || 60,
+                        intro: f.intro || null, notes_for_director: f.notes_for_director || null, book_pages: f.book_pages ? +f.book_pages : null };
+      let id = existing?.id;
+      if (id) { const { error } = await sb.from('sessions').update(payload).eq('id', id); if (error) throw new Error(S.cleanErr(error)); }
+      else { const { data, error } = await sb.from('sessions').insert(Object.assign({ created_by: me.user_id, status: 'draft' }, payload)).select('id').single(); if (error) throw new Error(S.cleanErr(error)); id = data.id; }
+      // Replace items wholesale (simple + safe while the request is editable)
+      const { error: delErr } = await sb.from('session_items').delete().eq('session_id', id); if (delErr) throw new Error(S.cleanErr(delErr));
+      const { error: insErr } = await sb.from('session_items').insert(rows.map(r => ({ session_id: id, kind: r.kind, product_url: r.product_url, title: r.title, author: r.author, image_url: r.image_url, unit_price_cents: r.unit_price_cents })));
+      if (insErr) throw new Error(S.cleanErr(insErr));
+
+      if (submit) {
+        const v = await rpc('submit_session', { p_session_id: id });
+        const box = $('#validation');
+        if (!v.ok) {
+          box.innerHTML = `<div class="notice notice--error"><strong>Not submitted — please fix:</strong><ul>${v.errors.map(e => `<li>${esc(e)}</li>`).join('')}</ul>
+            ${v.warnings?.length ? `<p style="margin-top:.5rem;"><em>Also note:</em> ${v.warnings.map(esc).join(' ')}</p>` : ''}</div>`;
+          toast('Saved as draft, but it could not be submitted yet.', 'warn');
+          await loadAll(); openEditor(sessions.find(s => s.id === id)); $('#validation').innerHTML = box.innerHTML; return;
+        }
+        toast(`Submitted! ${v.required_qty} copies, est. ${fmtMoney(v.estimated_cost_cents)}. The director has been notified.`, 'ok', 7000);
+      } else toast('Draft saved.', 'ok');
+      await loadAll(); $('#editor').hidden = true;
+    } catch (err) { toast(err.message, 'error'); } finally { S.busy(btn, false); }
+  }
+
+  /* ── Roster (4.4: first names + grade only) ─────────────────── */
+  async function renderRoster() {
+    const wrap = $('#rosterWrap'); wrap.innerHTML = '';
+    const { data: roster } = await sb.from('club_roster').select('*').order('first_name');
+    const { data: fb } = await sb.from('feedback').select('student_id, rating');
+    for (const c of clubs) {
+      const kids = (roster || []).filter(r => r.club_id === c.id);
+      wrap.insertAdjacentHTML('beforeend', `<div class="panel"><h2>${esc(c.name)} <span class="subtle">· ${kids.filter(k => k.enrolled).length} enrolled</span></h2>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>First name</th><th>Grade</th><th>Status</th><th>Feedback sent</th><th>Avg ⭐</th></tr></thead><tbody>
+        ${kids.length ? kids.map(k => { const mine = (fb || []).filter(x => x.student_id === k.student_id);
+          return `<tr><td>${esc(k.first_name)}</td><td>${esc(k.grade)}</td><td>${k.enrolled ? '<span class="pill pill--green">Enrolled</span>' : '<span class="pill pill--gray">Withdrawn</span>'}</td><td>${mine.length}</td><td>${mine.length ? (mine.reduce((a, x) => a + x.rating, 0) / mine.length).toFixed(1) : '—'}</td></tr>`; }).join('')
+          : '<tr><td colspan="5" class="subtle">No students assigned yet.</td></tr>'}
+        </tbody></table></div>
+        <p class="hint">Mailing addresses and parent contact details are handled by directors and are not shown here.</p></div>`);
+    }
+  }
+
+  /* ── Feedback digest (4.5) ─────────────────────────────────── */
+  function renderDigestChooser() {
+    const sel = $('#digestSession');
+    const visible = sessions.filter(s => ['approved', 'ordered', 'shipped', 'delivered'].includes(s.status));
+    sel.innerHTML = visible.length ? visible.map(s => `<option value="${esc(s.id)}">${esc(s.title)} · ${esc(fmtDate(s.session_at))}</option>`).join('') : '<option value="">No approved sessions yet</option>';
+    sel.onchange = renderDigest; renderDigest();
+  }
+  async function renderDigest() {
+    const id = $('#digestSession').value; const box = $('#digest');
+    if (!id) { box.innerHTML = ''; return; }
+    try {
+      const d = await rpc('feedback_digest', { p_session_id: id });
+      box.innerHTML = `<div class="kpi" style="margin:1rem 0;"><div><b>${esc(d.count)}</b><span>responses</span></div><div><b>${esc(d.avg_rating ?? '—')}</b><span>average stars</span></div></div>
+        <div class="list">${(d.rows || []).map(r => `<div class="item"><div class="item__main"><div class="item__title">${esc(r.first_name)} <span class="subtle">· Grade ${esc(r.grade)}</span> · ${'⭐'.repeat(r.rating)}</div>
+          <div class="item__meta">${esc(fmtDateTime(r.created_at))}</div>
+          ${r.book_thoughts ? `<p style="margin-top:.4rem;"><strong>About the book:</strong> ${esc(r.book_thoughts)}</p>` : ''}
+          ${r.note_to_leader ? `<p><strong>For you:</strong> ${esc(r.note_to_leader)}</p>` : ''}</div></div>`).join('') || '<p class="subtle">No feedback yet for this session.</p>'}</div>`;
+    } catch (e) { box.innerHTML = `<div class="notice notice--error">${esc(e.message)}</div>`; }
+  }
+
+  await loadAll();
+})();
+</script>
+</body>
+</html>

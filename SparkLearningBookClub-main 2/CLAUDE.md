@@ -16,6 +16,8 @@ Initial build complete. All pages exist and link to each other. Several placehol
 | `donate.html` | Donations page with giving tiers |
 | `styles.css` | All shared styles |
 | `nav.js` | Mobile nav toggle + active link highlighting |
+| `members/` | **Member portal** (added 2026-10-11): sign-in, parent/student/leader/director views. Backend = Supabase (`../supabase/`). Setup + PRD mapping in `members/README.md`. |
+| `_headers` | Netlify headers: `/members/*` is no-index / no-frame / no-referrer |
 
 ## Design
 - **Colors:** Purple (`#5B2D8E`) primary, Gold (`#F5A623`) accent, Pink (`#E8708A`) accent
@@ -31,6 +33,15 @@ Initial build complete. All pages exist and link to each other. Several placehol
 6. **Email address** — Replace `hello@sparklarning.org` in `about.html` with the real contact email
 7. **Social Good Fund EIN** — Replace "available upon request" in `donate.html` with the real EIN if desired
 8. **Year** — Footer says © 2024 — update if needed
+
+## Member portal (2026-10)
+Implements Phase 1 of `SPARKS_Portal_Requirements.docx`. Plain HTML/JS pages under `members/`
+talk to a Supabase project via `members/config.js` (project URL + anon key — fill these in).
+Database schema, row-level security and the ordering-pipeline functions live in
+`supabase/migrations/20261011120000_member_portal.sql`; email/USPS/iCal/student-login logic in
+`supabase/functions/`. Rules that must not be broken: no adult↔child or child↔child messaging;
+students store only first name/grade/club; addresses readable only by the owning parent and
+directors. Read `members/README.md` before changing anything.
 
 ## Deployment (Next Steps)
 The site is plain HTML/CSS/JS — no build step needed. Options for free hosting:

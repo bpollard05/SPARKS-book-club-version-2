@@ -1,0 +1,12 @@
+# Netlify headers (publish-dir level). The member portal must not be indexed,
+# framed, or leak URLs via Referer (Section 8: no PII in URLs or logs).
+/members/*
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cache-Control: no-store
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

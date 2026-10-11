@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Director Dashboard — SPARKS Members</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="members.css" />
+</head>
+<body>
+<nav class="pnav" id="portalNav"></nav>
+
+<main class="portal">
+  <h1>Director Dashboard</h1>
+  <div class="kpi" id="kpis" style="margin:1rem 0 1.5rem;"></div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  aria-controls="t-approvals">Approvals</button>
+    <button role="tab" aria-selected="false" aria-controls="t-orders">Orders &amp; shipping</button>
+    <button role="tab" aria-selected="false" aria-controls="t-people">People</button>
+    <button role="tab" aria-selected="false" aria-controls="t-clubs">Clubs</button>
+    <button role="tab" aria-selected="false" aria-controls="t-settings">Settings</button>
+    <button role="tab" aria-selected="false" aria-controls="t-reports">Reports &amp; audit</button>
+  </div>
+
+  <section id="t-approvals" role="tabpanel"><div id="approvals" class="list"></div></section>
+
+  <section id="t-orders" role="tabpanel" hidden>
+    <div id="atRisk"></div>
+    <div id="orders" class="list"></div>
+    <div id="packageView" class="panel" hidden></div>
+  </section>
+
+  <section id="t-people" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="panel__head"><h2>Adults &amp; roles</h2>
+        <form id="grantForm" class="btn-row">
+          <input name="email" type="email" placeholder="email of an existing account" required style="padding:.6rem;border:2px solid #D9D0EA;border-radius:10px;min-width:240px;">
+          <select name="role" style="padding:.6rem;border:2px solid #D9D0EA;border-radius:10px;"><option value="leader">Leader</option><option value="director">Director</option></select>
+          <button class="btn btn--primary btn--sm" type="submit">Grant role</button>
+        </form>
+      </div>
+      <div class="table-wrap"><table class="tbl" id="peopleTbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Roles</th><th>Leads</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <h2>Students</h2>
+      <p class="subtle">Assign each enrolled student to a club. Address status is shown so you can chase missing or unverified addresses before ordering.</p>
+      <div class="table-wrap"><table class="tbl" id="studentTbl"><thead><tr><th>Student</th><th>Grade</th><th>Parent</th><th>Address</th><th>Club</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="t-clubs" role="tabpanel" hidden>
+    <div class="grid-2">
+      <div class="panel"><h2>Clubs</h2><div id="clubList" class="list" style="margin:.75rem 0;"></div>
+        <form id="clubForm">
+          <h3>Add a club</h3>
+          <div class="field"><label for="c_name">Club name</label><input id="c_name" name="name" required placeholder="e.g. Lincoln Elementary — Tuesdays"></div>
+          <div class="field"><label for="c_school">School</label><select id="c_school" name="school_id"></select></div>
+          <div class="field"><label for="c_url">Zoom / meeting link</label><input id="c_url" name="meeting_url" type="url"></div>
+          <button class="btn btn--primary btn--sm" type="submit">Add club</button>
+        </form></div>
+      <div class="panel"><h2>Schools</h2><div id="schoolList" class="list" style="margin:.75rem 0;"></div>
+        <form id="schoolForm">
+          <div class="field"><label for="s_name">School name</label><input id="s_name" name="name" required></div>
+          <div class="field"><label for="s_city">City</label><input id="s_city" name="city"></div>
+          <button class="btn btn--primary btn--sm" type="submit">Add school</button>
+        </form></div>
+    </div>
+  </section>
+
+  <section id="t-settings" role="tabpanel" hidden>
+    <div class="grid-2">
+      <div class="panel"><h2>Ordering rules</h2>
+        <form id="settingsForm">
+          <div class="field"><label for="spare_count">Spare copies per item</label><input id="spare_count" name="spare_count" type="number" min="0" required></div>
+          <div class="field"><label for="shipping_buffer_days">Shipping buffer (days before session the order must be placed)</label><input id="shipping_buffer_days" name="shipping_buffer_days" type="number" min="0" required></div>
+          <div class="field"><label for="budget_cap">Budget cap per session ($)</label><input id="budget_cap" name="budget_cap" type="number" min="0" step="1" required></div>
+          <button class="btn btn--primary btn--sm" type="submit">Save</button>
+        </form></div>
+      <div class="panel"><h2>Agreements (consent documents)</h2>
+        <p class="subtle">Publishing a new version makes it current; families are asked to accept it next time they sign in. Previous acceptances stay on record.</p>
+        <div id="consentDocs" class="list" style="margin:.75rem 0;"></div>
+        <form id="consentForm" class="field--inline" style="align-items:end;">
+          <div class="field"><label>Document</label><select name="kind"><option value="terms">Terms of Service</option><option value="privacy">Privacy Policy</option><option value="program">Program Consent</option></select></div>
+          <div class="field"><label>New version label</label><input name="version" required placeholder="e.g. 2027-01"></div>
+          <div class="field"><label>URL</label><input name="url" required pattern="^(/[^\/\\].*|https?://.*)$" title="Start with / or https://" placeholder="/members/legal/privacy.html"></div>
+          <div class="field"><button class="btn btn--primary btn--sm" type="submit">Publish</button></div>
+        </form></div>
+    </div>
+  </section>
+
+  <section id="t-reports" role="tabpanel" hidden>
+    <div class="panel"><div class="panel__head"><h2>Spend report</h2><button class="btn btn--outline-purple btn--sm" id="spendCsv" type="button">Download CSV</button></div>
+      <div class="table-wrap"><table class="tbl" id="spendTbl"><thead><tr><th>Session</th><th>Club</th><th>Date</th><th>Status</th><th>Qty</th><th>Estimated</th><th>Actual</th><th>Order refs</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="panel"><h2>Audit trail <span class="subtle">(latest 200)</span></h2>
+      <div class="table-wrap"><table class="tbl" id="auditTbl"><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody></tbody></table></div></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const S = window.SPARKS;
+  const me = await S.requireAuth(['director']);
+  const { $, $$, sb, esc, toast, badge, fmtDate, fmtDateTime, fmtMoney, rpc } = S;
+
+  $$('[role=tab]').forEach(tab => tab.addEventListener('click', () => {
+    $$('[role=tab]').forEach(t => t.setAttribute('aria-selected', t === tab));
+    $$('[role=tabpanel]').forEach(p => p.hidden = p.id !== tab.getAttribute('aria-controls'));
+    history.replaceState(null, '', '#' + tab.getAttribute('aria-controls'));
+  }));
+  if (location.hash) { const t = $(`[aria-controls="${location.hash.slice(1)}"]`); if (t) t.click(); }
+  // Deep link from approval emails: director.html?session=<id>
+  const deepSession = new URLSearchParams(location.search).get('session');
+
+  let clubs = [], schools = [], sessions = [], profiles = [], roles = [], leaders = [], students = [], families = [], settings = {};
+  const clubName = (id) => clubs.find(c => c.id === id)?.name || '—';
+  const profName = (uid) => profiles.find(p => p.user_id === uid)?.full_name || '—';
+
+  async function loadAll() {
+    const r = await Promise.all([
+      sb.from('clubs').select('*').order('name'), sb.from('schools').select('*').order('name'),
+      sb.from('sessions').select('*, session_items(*)').order('session_at', { ascending: false }),
+      sb.from('profiles').select('*').order('full_name'), sb.from('user_roles').select('*'), sb.from('club_leaders').select('*'),
+      sb.from('students').select('*').order('first_name'), sb.from('families').select('id,parent_user_id,has_address,address_validated,deletion_requested_at'),
+      sb.from('settings').select('*').eq('id', 1).single(),
+    ]);
+    const err = r.find(x => x.error); if (err) toast(S.cleanErr(err.error), 'error');
+    [clubs, schools, sessions, profiles, roles, leaders, students, families] = r.slice(0, 8).map(x => x.data || []);
+    settings = r[8].data || {};
+    renderKpis(); renderApprovals(); renderOrders(); renderPeople(); renderClubs(); renderSettings(); renderReports();
+    if (deepSession) { const t = $('[aria-controls="t-approvals"]'); t.click(); const el = document.getElementById('req-' + deepSession); if (el) el.scrollIntoView({ behavior: 'smooth' }); }
+  }
+
+  function renderKpis() {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const late = sessions.filter(s => ['approved'].includes(s.status) && s.order_by_date && s.order_by_date < today).length;
+    $('#kpis').innerHTML = `
+      <div><b>${sessions.filter(s => s.status === 'submitted').length}</b><span>awaiting approval</span></div>
+      <div><b>${sessions.filter(s => s.status === 'approved').length}</b><span>to order</span></div>
+      <div><b style="${late ? 'color:var(--coral)' : ''}">${late}</b><span>past order-by date</span></div>
+      <div><b>${students.filter(s => s.enrolled).length}</b><span>enrolled students</span></div>
+      <div><b>${families.filter(f => f.deletion_requested_at).length}</b><span>deletion requests</span></div>`;
+  }
+
+  /* ── Approvals (6.3) ─────────────────────────────────────────── */
+  function itemsTable(s) {
+    const qty = s.required_qty || '?';
+    return `<div class="table-wrap"><table class="tbl"><thead><tr><th>Item</th><th>Link</th><th>Each</th><th>Qty</th><th>Total</th></tr></thead><tbody>
+      ${(s.session_items || []).map(i => `<tr><td>${i.kind === 'book' ? '📚' : '🔬'} ${esc(i.title)}${i.author ? ' <span class="subtle">· ' + esc(i.author) + '</span>' : ''}</td>
+        <td><a href="${esc(i.product_url)}" target="_blank" rel="noopener">open ↗</a></td><td>${esc(fmtMoney(i.unit_price_cents))}</td><td>${esc(qty)}</td><td>${i.unit_price_cents != null && s.required_qty ? esc(fmtMoney(i.unit_price_cents * s.required_qty)) : '—'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  function renderApprovals() {
+    const q = sessions.filter(s => s.status === 'submitted');
+    const recent = sessions.filter(s => ['changes_requested'].includes(s.status));
+    $('#approvals').innerHTML = (q.length ? q.map(s => `<div class="panel" id="req-${esc(s.id)}">
+        <div class="panel__head"><h2>${esc(s.title)} ${badge(s.status)}</h2><span class="subtle">${esc(clubName(s.club_id))} · ${esc(fmtDateTime(s.session_at))}</span></div>
+        <div class="kpi" style="margin-bottom:1rem;"><div><b>${esc(s.required_qty)}</b><span>copies each</span></div><div><b>${esc(fmtMoney(s.estimated_cost_cents))}</b><span>estimated</span></div><div><b>${esc(fmtDate(s.order_by_date + 'T12:00:00', { year: undefined }))}</b><span>order by</span></div><div><b>${esc(profName(s.created_by))}</b><span>leader</span></div></div>
+        ${itemsTable(s)}
+        ${s.notes_for_director ? `<div class="notice" style="margin-top:1rem;"><strong>Leader's note:</strong> ${esc(s.notes_for_director)}</div>` : ''}
+        ${s.intro ? `<p class="subtle" style="margin-top:.5rem;"><strong>Intro for students:</strong> ${esc(s.intro)}</p>` : ''}
+        <div class="field" style="margin-top:1rem;"><label>Comment (required if requesting changes)</label><textarea data-comment="${esc(s.id)}" maxlength="2000"></textarea></div>
+        <div class="btn-row"><button class="btn btn--green" data-approve="${esc(s.id)}">Approve ✓</button><button class="btn btn--coral" data-changes="${esc(s.id)}">Request changes</button></div>
+      </div>`).join('') : '<div class="notice notice--ok">Nothing waiting for approval. 🎉</div>')
+      + (recent.length ? `<h2 style="margin-top:1.5rem;">Sent back to leaders</h2>` + recent.map(s => `<div class="item"><div class="item__main"><div class="item__title">${esc(s.title)} ${badge(s.status)}</div><div class="item__meta">${esc(clubName(s.club_id))} · ${esc(s.decision_comment || '')}</div></div></div>`).join('') : '');
+    $$('[data-approve]').forEach(b => b.onclick = () => decide(b.dataset.approve, true, b));
+    $$('[data-changes]').forEach(b => b.onclick = () => decide(b.dataset.changes, false, b));
+  }
+  async function decide(id, approve, btn) {
+    const comment = $(`[data-comment="${id}"]`).value.trim();
+    if (!approve && !comment) return toast('Tell the leader what to change.', 'error');
+    if (approve && !confirm('Approve this request? Shipment rows will be created for every enrolled student.')) return;
+    S.busy(btn, true);
+    try { await rpc('decide_session', { p_session_id: id, p_approve: approve, p_comment: comment || null }); toast(approve ? 'Approved. The leader has been notified.' : 'Sent back to the leader.', 'ok'); await loadAll(); }
+    catch (e) { toast(e.message, 'error'); } finally { S.busy(btn, false); }
+  }
+
+  /* ── Orders & shipping (6.4–6.7) ─────────────────────────────── */
+  function renderOrders() {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const active = sessions.filter(s => ['approved', 'ordered', 'shipped', 'delivered'].includes(s.status) && new Date(s.session_at) > new Date(Date.now() - 45 * 86400000));
+    const late = active.filter(s => s.status === 'approved' && s.order_by_date && s.order_by_date < today);
+    const soon = active.filter(s => s.status === 'approved' && s.order_by_date && s.order_by_date >= today && S.daysUntil(s.order_by_date + 'T23:59:59') <= 3);
+    $('#atRisk').innerHTML = (late.length ? `<div class="notice notice--error"><strong>⚠️ Session at risk:</strong> ${late.map(s => esc(s.title) + ' (order-by date was ' + esc(fmtDate(s.order_by_date + 'T12:00:00')) + ')').join('; ')} — not ordered yet.</div>` : '')
+      + (soon.length ? `<div class="notice notice--warn"><strong>Order soon:</strong> ${soon.map(s => esc(s.title) + ' by ' + esc(fmtDate(s.order_by_date + 'T12:00:00'))).join('; ')}.</div>` : '');
+    $('#orders').innerHTML = active.length ? active.map(s => `<div class="item item--clickable" data-id="${esc(s.id)}"><div class="item__main">
+        <div class="item__title">${esc(s.title)} ${badge(s.status)}</div>
+        <div class="item__meta">${esc(clubName(s.club_id))} · session ${esc(fmtDate(s.session_at))} · order by <strong>${esc(fmtDate(s.order_by_date + 'T12:00:00'))}</strong> · ${esc(s.required_qty)} copies · est. ${esc(fmtMoney(s.estimated_cost_cents))}</div>
+      </div><span class="btn btn--outline-purple btn--sm">Open order package</span></div>`).join('') : '<div class="notice">No approved sessions to order right now.</div>';
+    $$('#orders .item').forEach(el => el.onclick = () => openPackage(el.dataset.id));
+  }
+
+  async function openPackage(id) {
+    const box = $('#packageView'); box.hidden = false; box.innerHTML = '<p class="subtle">Loading order package…</p>'; box.scrollIntoView({ behavior: 'smooth' });
+    let pkg; try { pkg = await rpc('order_package', { p_session_id: id }); } catch (e) { box.innerHTML = `<div class="notice notice--error">${esc(e.message)}</div>`; return; }
+    const s = pkg.session; const total = pkg.items.reduce((a, i) => a + (i.line_total_cents || 0), 0);
+    const bad = pkg.manifest.filter(m => m.enrolled && (!m.address_line1 || !m.address_validated));
+    const withdrawn = pkg.manifest.filter(m => !m.enrolled); const late = pkg.manifest.filter(m => m.enrolled && m.added_after_approval);
+    box.innerHTML = `
+      <div class="panel__head"><h2>Order package: ${esc(s.title)} ${badge(s.status)}</h2><div class="btn-row"><button class="btn btn--ghost btn--sm" onclick="window.print()">Print</button><button class="btn btn--ghost btn--sm" id="closePkg">Close</button></div></div>
+      <p class="subtle">Place this order in the SPARKS Amazon Business account by <strong>${esc(fmtDate(s.order_by_date + 'T12:00:00'))}</strong>, then paste the order number below. Leader${pkg.leaders.length > 1 ? 's' : ''}: ${pkg.leaders.map(l => esc(l.name) + ' (' + esc(l.email) + ')').join(', ') || '—'}.</p>
+      <h3 style="margin-top:1rem;">1. Items to order (${esc(s.required_qty)} of each)</h3>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>Item</th><th>Link</th><th>Each</th><th>Qty</th><th>Line total</th></tr></thead><tbody>
+        ${pkg.items.map(i => `<tr><td>${i.kind === 'book' ? '📚' : '🔬'} ${esc(i.title)}</td><td><a href="${esc(i.product_url)}" target="_blank" rel="noopener">open ↗</a><div class="mono">${esc(i.product_url)}</div></td><td>${esc(fmtMoney(i.unit_price_cents))}</td><td>${esc(i.qty)}</td><td>${esc(fmtMoney(i.line_total_cents))}</td></tr>`).join('')}
+        <tr><td colspan="4"><strong>Estimated total</strong></td><td><strong>${esc(fmtMoney(total))}</strong></td></tr></tbody></table></div>
+      <h3 style="margin-top:1.25rem;">2. Shipping manifest (${pkg.manifest.filter(m => m.enrolled).length} students + 1 leader copy + spares to SPARKS)</h3>
+      ${s.required_qty_now !== s.required_qty ? `<div class="notice notice--warn"><strong>Enrollment changed since approval:</strong> ${esc(s.enrolled_now)} students are enrolled now, so you need <strong>${esc(s.required_qty_now)}</strong> copies (the request said ${esc(s.required_qty)}).${late.length ? ' Added: ' + late.map(m => esc(m.student_first_name)).join(', ') + '.' : ''}${withdrawn.length ? ' Do not ship (withdrawn or moved): ' + withdrawn.map(m => esc(m.student_first_name)).join(', ') + '.' : ''}</div>` : ''}
+      ${bad.length ? `<div class="notice notice--warn"><strong>${bad.length} address${bad.length > 1 ? 'es' : ''} missing or unverified:</strong> ${bad.map(m => esc(m.student_first_name)).join(', ')}. Contact the parent before shipping.</div>` : ''}
+      <div class="btn-row" style="margin:.5rem 0;"><button class="btn btn--outline-purple btn--sm" id="manifestCsv">Download manifest CSV</button></div>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Ship to</th><th>Parent</th><th>Address OK?</th><th>Shipment</th><th>Update</th></tr></thead><tbody>
+        ${pkg.manifest.map(m => `<tr style="${m.enrolled ? '' : 'opacity:.55;text-decoration:line-through;'}">
+          <td><strong>${esc(m.student_first_name)}</strong>${m.enrolled ? '' : ` <span class="pill pill--coral" style="text-decoration:none;">${m.in_club ? 'Withdrawn' : 'Moved to another club'} — do not ship</span>`}${m.enrolled && m.added_after_approval ? ' <span class="pill pill--gold">Added late</span>' : ''}<br><span class="subtle">Grade ${esc(m.grade)}</span></td>
+          <td>${esc(m.parent_name)}<br>${esc(m.address_line1 || '(none)')}${m.address_line2 ? '<br>' + esc(m.address_line2) : ''}<br>${esc(m.city || '')}, ${esc(m.state || '')} ${esc(m.zip || '')}</td>
+          <td><a href="mailto:${esc(m.parent_email)}">${esc(m.parent_email)}</a><br>${esc(m.parent_phone || '')}</td>
+          <td>${m.address_validated ? '<span class="pill pill--green">USPS ✓</span>' : '<span class="pill pill--coral">Unverified</span>'}${m.address_changed_after_order ? '<br><span class="pill pill--coral">Changed after order!</span>' : ''}</td>
+          <td>${badge(m.shipment_status)}${m.tracking ? '<div class="mono">' + esc(m.tracking) + '</div>' : ''}${m.note ? '<div class="subtle">' + esc(m.note) + '</div>' : ''}</td>
+          <td><select data-ship="${esc(m.shipment_id)}" style="padding:.4rem;border:2px solid #D9D0EA;border-radius:8px;">
+            ${['pending', 'shipped', 'delivered', 'could_not_ship'].map(v => `<option value="${v}" ${m.shipment_status === v ? 'selected' : ''}>${S.STATUS[v].label}</option>`).join('')}</select>
+            <input data-track="${esc(m.shipment_id)}" placeholder="tracking #" style="padding:.4rem;border:2px solid #D9D0EA;border-radius:8px;width:120px;margin-top:.25rem;"></td></tr>`).join('')}
+      </tbody></table></div>
+      <h3 style="margin-top:1.25rem;">3. Record the order</h3>
+      ${pkg.orders.length ? `<div class="list" style="margin-bottom:.75rem;">${pkg.orders.map(o => `<div class="item"><div class="item__main"><div class="item__title">${esc(o.vendor)} · ${esc(o.order_ref)}</div><div class="item__meta">placed ${esc(fmtDateTime(o.placed_at))} ${o.notes ? '· ' + esc(o.notes) : ''}</div></div>
+        <label class="subtle">Actual cost $ <input data-cost="${esc(o.id)}" type="number" step="0.01" min="0" value="${o.actual_cost_cents != null ? (o.actual_cost_cents / 100).toFixed(2) : ''}" style="width:110px;padding:.4rem;border:2px solid #D9D0EA;border-radius:8px;"></label>
+        <button class="btn btn--outline-purple btn--sm" data-savecost="${esc(o.id)}">Save</button></div>`).join('')}</div>` : ''}
+      ${['approved', 'ordered'].includes(s.status) ? `<form id="orderForm" class="field--inline" style="align-items:end;">
+        <div class="field"><label>Vendor</label><select name="vendor"><option value="amazon_business">Amazon Business</option><option value="bookshop">bookshop.org</option><option value="local">Local bookstore</option><option value="other">Other</option></select></div>
+        <div class="field"><label>Order number</label><input name="order_ref" required placeholder="e.g. 113-1234567-1234567"></div>
+        <div class="field"><label>Notes</label><input name="notes"></div>
+        <div class="field"><button class="btn btn--primary" type="submit">Mark as ordered</button></div></form>` : ''}
+      <div class="btn-row" style="margin-top:1rem;">
+        ${s.status !== 'cancelled' ? `<button class="btn btn--ghost btn--sm" id="cancelSession">Cancel this session</button>` : ''}
+      </div>`;
+    $('#closePkg').onclick = () => { box.hidden = true; };
+    $('#manifestCsv').onclick = () => S.csvDownload(`manifest-${s.title.replace(/[^a-z0-9]+/gi, '-')}.csv`, [
+      ['Student', 'Grade', 'Parent', 'Email', 'Phone', 'Address 1', 'Address 2', 'City', 'State', 'ZIP', 'USPS validated', 'Shipment status'],
+      ...pkg.manifest.filter(m => m.enrolled).map(m => [m.student_first_name, m.grade, m.parent_name, m.parent_email, m.parent_phone, m.address_line1, m.address_line2, m.city, m.state, m.zip, m.address_validated ? 'yes' : 'no', m.shipment_status])]);
+    $$('[data-ship]').forEach(sel => sel.onchange = async () => {
+      try { await rpc('set_shipment_status', { p_shipment_id: sel.dataset.ship, p_status: sel.value, p_tracking: $(`[data-track="${sel.dataset.ship}"]`).value || null }); toast('Shipment updated.', 'ok'); await loadAll(); openPackage(id); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+    $$('[data-savecost]').forEach(b => b.onclick = async () => {
+      const v = $(`[data-cost="${b.dataset.savecost}"]`).value; if (v === '') return;
+      try { await rpc('set_actual_cost', { p_order_id: b.dataset.savecost, p_actual_cost_cents: Math.round(parseFloat(v) * 100) }); toast('Saved.', 'ok'); await loadAll(); openPackage(id); } catch (e) { toast(e.message, 'error'); }
+    });
+    const of = $('#orderForm'); if (of) of.onsubmit = async (e) => {
+      e.preventDefault(); const f = S.formData(of);
+      try { await rpc('record_order', { p_session_id: id, p_order_ref: f.order_ref, p_vendor: f.vendor, p_notes: f.notes || null }); toast('Order recorded. Status is now Ordered.', 'ok'); await loadAll(); openPackage(id); } catch (err) { toast(err.message, 'error'); }
+    };
+    const cs = $('#cancelSession'); if (cs) cs.onclick = async () => {
+      const why = prompt('Cancel this session? Families will no longer see it. Reason:'); if (why === null) return;
+      try { await rpc('set_session_status', { p_session_id: id, p_status: 'cancelled', p_comment: why }); toast('Cancelled.', 'ok'); box.hidden = true; await loadAll(); } catch (e) { toast(e.message, 'error'); }
+    };
+  }
+
+  /* ── People ──────────────────────────────────────────────────── */
+  function renderPeople() {
+    $('#peopleTbl tbody').innerHTML = profiles.map(p => {
+      const rs = roles.filter(r => r.user_id === p.user_id).map(r => r.role);
+      const leads = leaders.filter(l => l.user_id === p.user_id).map(l => clubName(l.club_id));
+      return `<tr><td>${esc(p.full_name)}</td><td>${esc(p.email)}</td><td>${esc(p.phone || '')}</td>
+        <td>${rs.map(r => `<span class="pill pill--${r === 'director' ? 'purple' : r === 'leader' ? 'teal' : 'gray'}">${esc(r)}</span> `).join('')}</td>
+        <td>${leaders.filter(l => l.user_id === p.user_id).map(l => `${esc(clubName(l.club_id))} <button class="btn btn--ghost btn--sm" data-unassign="${esc(l.club_id)}" data-email="${esc(p.email)}" title="Remove from this club">✕</button>`).join(', ') || '—'}${rs.includes('leader') ? `<br><select data-assign="${esc(p.email)}" style="padding:.3rem;border:2px solid #D9D0EA;border-radius:8px;margin-top:.25rem;"><option value="">+ assign to club…</option>${clubs.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select>` : ''}</td>
+        <td>${rs.filter(r => r !== 'parent').map(r => `<button class="btn btn--ghost btn--sm" data-revoke="${esc(p.user_id)}" data-role="${r}">remove ${esc(r)}</button>`).join('')}</td></tr>`;
+    }).join('');
+    $$('[data-revoke]').forEach(b => b.onclick = async () => {
+      if (!confirm(`Remove the ${b.dataset.role} role?`)) return;
+      try { await rpc('revoke_role', { p_user_id: b.dataset.revoke, p_role: b.dataset.role }); toast('Role removed.', 'ok'); loadAll(); } catch (e) { toast(e.message, 'error'); }
+    });
+    $$('[data-unassign]').forEach(b => b.onclick = async () => {
+      if (!confirm('Remove this leader from the club? They will no longer see its roster or feedback.')) return;
+      try { await rpc('set_club_leader', { p_club_id: b.dataset.unassign, p_email: b.dataset.email, p_add: false }); toast('Leader removed from club.', 'ok'); loadAll(); } catch (e) { toast(e.message, 'error'); }
+    });
+    $$('[data-assign]').forEach(sel => sel.onchange = async () => {
+      if (!sel.value) return;
+      try { await rpc('set_club_leader', { p_club_id: sel.value, p_email: sel.dataset.assign, p_add: true }); toast('Leader assigned.', 'ok'); loadAll(); } catch (e) { toast(e.message, 'error'); }
+    });
+
+    $('#studentTbl tbody').innerHTML = students.map(st => {
+      const fam = families.find(f => f.id === st.family_id) || {};
+      return `<tr><td><strong>${esc(st.first_name)}</strong>${st.username ? `<br><span class="subtle">login: ${esc(st.username)}</span>` : ''}</td><td>${esc(st.grade)}</td>
+        <td>${esc(profName(fam.parent_user_id))}${fam.deletion_requested_at ? '<br><span class="pill pill--coral">Deletion requested</span>' : ''}</td>
+        <td>${fam.has_address ? (fam.address_validated ? '<span class="pill pill--green">USPS ✓</span>' : '<span class="pill pill--gold">Unverified</span>') : '<span class="pill pill--coral">Missing</span>'}</td>
+        <td><select data-club="${esc(st.id)}" style="padding:.3rem;border:2px solid #D9D0EA;border-radius:8px;"><option value="">— none —</option>${clubs.map(c => `<option value="${esc(c.id)}" ${st.club_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></td>
+        <td>${st.enrolled ? '<span class="pill pill--green">Enrolled</span>' : '<span class="pill pill--gray">Withdrawn</span>'}</td></tr>`;
+    }).join('') || '<tr><td colspan="6" class="subtle">No students yet.</td></tr>';
+    $$('[data-club]').forEach(sel => sel.onchange = async () => {
+      try { await rpc('assign_student_club', { p_student_id: sel.dataset.club, p_club_id: sel.value || null }); toast('Club updated.', 'ok'); loadAll(); } catch (e) { toast(e.message, 'error'); }
+    });
+  }
+  $('#grantForm').onsubmit = async (e) => {
+    e.preventDefault(); const f = S.formData(e.target);
+    try { await rpc('grant_role', { p_email: f.email, p_role: f.role }); toast('Role granted.', 'ok'); e.target.reset(); loadAll(); } catch (err) { toast(err.message, 'error'); }
+  };
+
+  /* ── Clubs & schools ─────────────────────────────────────────── */
+  function renderClubs() {
+    $('#clubList').innerHTML = clubs.map(c => `<div class="item"><div class="item__main"><div class="item__title">${esc(c.name)} ${c.active ? '' : '<span class="pill pill--gray">inactive</span>'}</div>
+      <div class="item__meta">${esc(schools.find(s => s.id === c.school_id)?.name || 'No school')} · ${students.filter(s => s.club_id === c.id && s.enrolled).length} enrolled · leaders: ${leaders.filter(l => l.club_id === c.id).map(l => esc(profName(l.user_id))).join(', ') || 'none'}</div>
+      ${c.meeting_url ? `<div class="mono">${esc(c.meeting_url)}</div>` : ''}</div>
+      <button class="btn btn--ghost btn--sm" data-editclub="${esc(c.id)}">Edit link</button></div>`).join('') || '<p class="subtle">No clubs yet.</p>';
+    $$('[data-editclub]').forEach(b => b.onclick = async () => {
+      const c = clubs.find(x => x.id === b.dataset.editclub);
+      const url = prompt('Meeting (Zoom) link for ' + c.name + ':', c.meeting_url || ''); if (url === null) return;
+      const { error } = await sb.from('clubs').update({ meeting_url: url || null }).eq('id', c.id);
+      if (error) return toast(S.cleanErr(error), 'error'); toast('Saved.', 'ok'); loadAll();
+    });
+    $('#schoolList').innerHTML = schools.map(s => `<div class="item"><div class="item__main"><div class="item__title">${esc(s.name)}</div><div class="item__meta">${esc(s.city || '')}</div></div></div>`).join('') || '<p class="subtle">No schools yet.</p>';
+    $('#c_school').innerHTML = '<option value="">— none —</option>' + schools.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  }
+  $('#clubForm').onsubmit = async (e) => {
+    e.preventDefault(); const f = S.formData(e.target);
+    const { error } = await sb.from('clubs').insert({ name: f.name, school_id: f.school_id || null, meeting_url: f.meeting_url || null });
+    if (error) return toast(S.cleanErr(error), 'error'); toast('Club added.', 'ok'); e.target.reset(); loadAll();
+  };
+  $('#schoolForm').onsubmit = async (e) => {
+    e.preventDefault(); const f = S.formData(e.target);
+    const { error } = await sb.from('schools').insert({ name: f.name, city: f.city || null });
+    if (error) return toast(S.cleanErr(error), 'error'); toast('School added.', 'ok'); e.target.reset(); loadAll();
+  };
+
+  /* ── Settings ────────────────────────────────────────────────── */
+  async function renderSettings() {
+    $('#spare_count').value = settings.spare_count ?? 1; $('#shipping_buffer_days').value = settings.shipping_buffer_days ?? 10; $('#budget_cap').value = ((settings.budget_cap_cents ?? 30000) / 100);
+    const { data: docs } = await sb.from('consent_docs').select('*').order('kind').order('published_at', { ascending: false });
+    $('#consentDocs').innerHTML = (docs || []).map(d => `<div class="item"><div class="item__main"><div class="item__title">${esc(d.title)} <span class="subtle">v${esc(d.version)}</span> ${d.is_current ? '<span class="pill pill--green">current</span>' : ''}</div><div class="item__meta"><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a> · ${esc(fmtDate(d.published_at))}</div></div></div>`).join('');
+  }
+  $('#settingsForm').onsubmit = async (e) => {
+    e.preventDefault(); const f = S.formData(e.target);
+    const { error } = await sb.from('settings').update({ spare_count: +f.spare_count, shipping_buffer_days: +f.shipping_buffer_days, budget_cap_cents: Math.round(parseFloat(f.budget_cap) * 100), updated_at: new Date().toISOString() }).eq('id', 1);
+    if (error) return toast(S.cleanErr(error), 'error'); toast('Settings saved.', 'ok'); loadAll();
+  };
+  $('#consentForm').onsubmit = async (e) => {
+    e.preventDefault(); const f = S.formData(e.target);
+    const title = { terms: 'Terms of Service', privacy: 'Privacy Policy', program: 'Program Participation Consent' }[f.kind];
+    try { await rpc('publish_consent_doc', { p_kind: f.kind, p_version: f.version, p_title: title, p_url: f.url }); toast('Published.', 'ok'); e.target.reset(); renderSettings(); }
+    catch (err) { toast(err.message, 'error'); }
+  };
+
+  /* ── Reports & audit (6.7, Section 2) ────────────────────────── */
+  let spendRows = [];
+  async function renderReports() {
+    try { spendRows = await rpc('spend_report'); } catch (e) { spendRows = []; }
+    $('#spendTbl tbody').innerHTML = spendRows.map(r => `<tr><td>${esc(r.title)}</td><td>${esc(r.club)}</td><td>${esc(fmtDate(r.session_at))}</td><td>${badge(r.status)}</td><td>${esc(r.required_qty ?? '')}</td><td>${esc(fmtMoney(r.estimated_cost_cents))}</td><td>${esc(fmtMoney(r.actual_cost_cents))}</td><td class="mono">${esc(r.order_refs || '')}</td></tr>`).join('') || '<tr><td colspan="8" class="subtle">Nothing yet.</td></tr>';
+    const { data: audit } = await sb.from('audit_log').select('*').order('at', { ascending: false }).limit(200);
+    $('#auditTbl tbody').innerHTML = (audit || []).map(a => `<tr><td>${esc(fmtDateTime(a.at))}</td><td>${esc(profName(a.actor_id) !== '—' ? profName(a.actor_id) : (students.find(s => s.auth_user_id === a.actor_id)?.first_name || 'system'))}</td><td>${esc(a.action)}</td><td>${esc(a.entity)} <span class="mono">${esc((a.entity_id || '').slice(0, 8))}</span></td><td class="mono">${esc(a.details ? JSON.stringify(a.details) : '')}</td></tr>`).join('');
+  }
+  $('#spendCsv').onclick = () => S.csvDownload('sparks-spend-report.csv', [['Session', 'Club', 'Date', 'Status', 'Qty', 'Estimated', 'Actual', 'Order refs'],
+    ...spendRows.map(r => [r.title, r.club, fmtDate(r.session_at), r.status, r.required_qty, r.estimated_cost_cents != null ? (r.estimated_cost_cents / 100).toFixed(2) : '', r.actual_cost_cents != null ? (r.actual_cost_cents / 100).toFixed(2) : '', r.order_refs || ''])]);
+
+  await loadAll();
+})();
+</script>
+</body>
+</html>
