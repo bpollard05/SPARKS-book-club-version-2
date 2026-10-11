@@ -78,9 +78,9 @@
         { id: ids.zoe, family_id: ids.fam2, first_name: 'Zoe', grade: 5, club_id: ids.club, username: null, auth_user_id: null, enrolled: true, withdrawn_at: null, created_at: t0 },
       ],
       consent_docs: [
-        { kind: 'terms', version: '2026-10-draft', title: 'Terms of Service', url: 'legal/terms.html', is_current: true, published_at: t0 },
-        { kind: 'privacy', version: '2026-10-draft', title: 'Privacy Policy', url: 'legal/privacy.html', is_current: true, published_at: t0 },
-        { kind: 'program', version: '2026-10-draft', title: 'Program Participation Consent', url: 'legal/program.html', is_current: true, published_at: t0 },
+        { kind: 'terms', version: '2026-10', title: 'Terms of Service', url: 'legal/terms.html', is_current: true, published_at: t0 },
+        { kind: 'privacy', version: '2026-10', title: 'Privacy Policy', url: 'legal/privacy.html', is_current: true, published_at: t0 },
+        { kind: 'program', version: '2026-10', title: 'Program Participation Consent', url: 'legal/program.html', is_current: true, published_at: t0 },
       ],
       consents: [],
       sessions: [

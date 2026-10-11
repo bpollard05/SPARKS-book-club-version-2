@@ -946,6 +946,6 @@ revoke execute on function public.rollup_session_status(uuid) from public, authe
 
 -- Seed: current consent documents (SPARKS supplies final text — Section 3.1)
 insert into public.consent_docs (kind, version, title, url, is_current) values
-  ('terms',   '2026-10-draft', 'Terms of Service',  '/members/legal/terms.html',   true),
-  ('privacy', '2026-10-draft', 'Privacy Policy',    '/members/legal/privacy.html', true),
-  ('program', '2026-10-draft', 'Program Participation Consent', '/members/legal/program.html', true);
+  ('terms',   '2026-10', 'Terms of Service',  '/members/legal/terms.html',   true),
+  ('privacy', '2026-10', 'Privacy Policy',    '/members/legal/privacy.html', true),
+  ('program', '2026-10', 'Program Participation Consent', '/members/legal/program.html', true);
