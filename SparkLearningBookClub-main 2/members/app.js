@@ -64,6 +64,7 @@
       main.innerHTML = `<div class="container" style="padding:4rem 1.5rem;"><div class="notice notice--warn">
         <strong>The member portal isn't connected yet.</strong><br>
         Add the Supabase project URL and anon key to <code>members/config.js</code>. See <code>members/README.md</code>.
+        ${window.SPARKS_DEMO_AVAILABLE ? '<p style="margin-top:1rem;"><a class="btn btn--primary" href="index.html?demo=1">Try the demo with sample data</a></p>' : ''}
       </div></div>`;
       throw new Error('SPARKS portal not configured');
     }

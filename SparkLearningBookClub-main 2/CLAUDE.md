@@ -42,6 +42,7 @@ Database schema, row-level security and the ordering-pipeline functions live in
 `supabase/functions/`. Rules that must not be broken: no adult↔child or child↔child messaging;
 students store only first name/grade/club; addresses readable only by the owning parent and
 directors. Read `members/README.md` before changing anything.
+`members/demo.js` = in-browser demo backend (sample data; `?demo=1`); keep it in sync when RPC shapes change.
 
 ## Deployment (Next Steps)
 The site is plain HTML/CSS/JS — no build step needed. Options for free hosting:

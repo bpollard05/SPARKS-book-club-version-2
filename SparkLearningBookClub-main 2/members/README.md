@@ -29,6 +29,21 @@ members/
 
 ---
 
+## 0. Try it first: demo mode (no setup)
+Open `members/index.html?demo=1` (locally or on the live site). `members/demo.js` stands in for the
+backend with sample data stored only in that browser, so every role can be explored:
+
+| Sign in as | Email / username | Password |
+|---|---|---|
+| Director (also a parent) | `director@demo.sparks` | `demo1234` |
+| Leader (also a parent) | `leader@demo.sparks` | `demo1234` |
+| Parent of Maya + Ava | `parent@demo.sparks` | `demo1234` |
+| Parent of Zoe | `quinn@demo.sparks` | `demo1234` |
+| Student | `maya_reads` (Student tab) | `demo1234` |
+
+"Reset demo data" in the banner restores the sample data; "Exit demo" turns it off. Demo mode
+switches itself off automatically once `config.js` points at a real Supabase project.
+
 ## 1. One-time setup (about 45 minutes)
 
 ### 1.1 Create the Supabase project
